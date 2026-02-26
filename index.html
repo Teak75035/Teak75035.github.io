@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>妈妈我不会采音</title>
+<h5>@Teak75035 孩子不懂事做着玩的</h5>
+<style>
+body{
+    background:#0f0f0f;
+    color:#00ff88;
+    font-family:monospace;
+    padding:20px;
+}
+input,button{
+    margin:5px 0;
+    padding:6px;
+    background:#1a1a1a;
+    color:#00ff88;
+    border:1px solid #00ff88;
+}
+#topBar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+#touchArea{
+    margin-top:20px;
+    height:55vh;
+    border:2px dashed #00ff88;
+    position:relative;
+    touch-action:none;
+    user-select:none;
+}
+.ripple{
+    position:absolute;
+    width:20px;
+    height:20px;
+    border:2px solid #00ff88;
+    border-radius:50%;
+    pointer-events:none;
+    transform:translate(-50%,-50%);
+    animation:rippleAnim 0.5s ease-out forwards;
+}
+@keyframes rippleAnim{
+    from{opacity:1;transform:translate(-50%,-50%) scale(0.5);}
+    to{opacity:0;transform:translate(-50%,-50%) scale(4);}
+}
+#lyrics{
+    margin-left:30px;
+    width:40%;
+    white-space:pre-wrap;
+    font-size:18px;
+    color:#ff77aa;
+}
+#output{
+    white-space:pre;
+    margin-top:20px;
+    background:#000;
+    padding:10px;
+}
+/* 新增进度条样式 */
+#progressContainer {
+    width: 100%;
+    height: 8px;
+    background-color: #1a1a1a;
+    border: 1px solid #00ff88;
+    margin: 15px 0;
+    cursor: pointer;
+    position: relative;
+}
+#progressBar {
+    height: 100%;
+    background-color: #00ff88;
+    width: 0%;
+    transition: width 0.1s linear;
+}
+#progressTime {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #ffff88;
+    margin-bottom: 5px;
+}
+</style>
+</head>
+<body>
+
+<h2>妈妈我不会采音</h2>
+
+<input type="file" id="audioFile" accept="audio/*"><br>
+<input type="file" id="lrcFile" accept=".lrc"><br>
+
+<button onclick="analyze()">自动分析 BPM / Offset（不准慎用）</button>
+<div id="analysisResult"></div>
+
+<hr>
+
+<label>BPM:</label><br>
+<input type="number" id="bpm" step="0.01"><br>
+
+<label>Offset (±ms):</label><br>
+<input type="number" id="offset" step="1"><br>
+
+<label>设备音频延迟 (ms):</label><br>
+<input type="number" id="deviceLatency" step="1" value="0"><br>
+
+<button onclick="start()">开始脑绘</button>
+
+<!-- 新增进度条区域 -->
+<div id="progressTime">
+    <span id="currentTime">00:00.00</span>
+    <span id="totalTime">00:00.00</span>
+</div>
+<div id="progressContainer">
+    <div id="progressBar"></div>
+</div>
+
+<div id="topBar">
+    <h3>COMBO: <span id="count">0</span></h3>
+    <div id="lyrics"></div>
+</div>
+
+<div id="touchArea"></div>
+
+<div id="output"></div>
+<button id="exportBtn" style="display:none;">导出 TXT</button>
+
+<script>
+let ctx=new (window.AudioContext||window.webkitAudioContext)();
+let buffer=null;
+let source=null;
+let startTime=0;
+
+let clicks=[];
+let bpm=120;
+let offset=0;
+let deviceLatency=0;
+let started=false;
+
+let lyricsData=[];
+let currentLyricIndex=0;
+
+const MERGE_WINDOW=40;
+let lastTouch=0;
+// 仅保留2,3,4,8,16（按你的要求）
+const denominators=[2,3,4,8,16];
+
+// 新增：音频时长和进度相关变量
+let audioDuration = 0; // 音频总时长（秒）
+let progressUpdateId = null; // 进度更新动画帧ID
+
+// 格式化时间为 分:秒.毫秒 格式
+function formatTimeDisplay(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const sec = Math.floor(seconds % 60);
+    const ms = Math.floor((seconds % 1) * 100);
+    return `${String(minutes).padStart(2, '0')}:${String(sec).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+}
+
+async function analyze(){
+    const file=document.getElementById("audioFile").files[0];
+    if(!file) return alert("选音频");
+
+    const arrayBuffer=await file.arrayBuffer();
+    buffer=await ctx.decodeAudioData(arrayBuffer);
+    
+    // 新增：保存音频总时长，并更新进度条总时间显示
+    audioDuration = buffer.duration;
+    document.getElementById("totalTime").textContent = formatTimeDisplay(audioDuration);
+
+    let data=buffer.getChannelData(0);
+    const sr=buffer.sampleRate;
+    const frame=1024, hop=512;
+
+    let energy=[];
+    for(let i=0;i<data.length-frame;i+=hop){
+        let sum=0;
+        for(let j=0;j<frame;j++) sum+=data[i+j]*data[i+j];
+        energy.push(Math.sqrt(sum));
+    }
+
+    let avg=energy.reduce((a,b)=>a+b,0)/energy.length;
+    let peaks=[];
+    for(let i=1;i<energy.length-1;i++){
+        if(energy[i]>avg*1.3 && energy[i]>energy[i-1] && energy[i]>energy[i+1])
+            peaks.push(i);
+    }
+
+    if(peaks.length<2) return alert("节拍不明显");
+
+    let intervals=[];
+    for(let i=1;i<peaks.length;i++)
+        intervals.push(peaks[i]-peaks[i-1]);
+
+    let avgInterval=intervals.reduce((a,b)=>a+b,0)/intervals.length;
+    let seconds=avgInterval*hop/sr;
+    bpm=60/seconds;
+    while(bpm<90) bpm*=2;
+    while(bpm>180) bpm/=2;
+
+    let firstPeakTime=peaks[0]*hop/sr*1000;
+    let beatLen=60000/bpm;
+    offset=firstPeakTime%beatLen;
+
+    document.getElementById("bpm").value=bpm.toFixed(2);
+    document.getElementById("offset").value=offset.toFixed(0);
+    document.getElementById("analysisResult").innerText=
+        `BPM: ${bpm.toFixed(2)}  Offset: ${offset.toFixed(0)}ms`;
+}
+
+// 新增：更新播放进度
+function updateProgress() {
+    if (!started || !buffer) return;
+    
+    // 计算当前播放时间（秒）
+    const currentTime = ctx.currentTime - startTime;
+    // 限制最大进度为音频总时长
+    const clampedTime = Math.min(currentTime, audioDuration);
+    
+    // 更新进度条宽度
+    const progressPercent = (clampedTime / audioDuration) * 100;
+    document.getElementById("progressBar").style.width = `${progressPercent}%`;
+    
+    // 更新当前时间显示
+    document.getElementById("currentTime").textContent = formatTimeDisplay(clampedTime);
+    
+    // 继续请求下一帧更新
+    progressUpdateId = requestAnimationFrame(updateProgress);
+}
+
+// 新增：进度条点击跳转（可选增强）
+document.getElementById("progressContainer").addEventListener("click", function(e) {
+    if (!started || !buffer) return;
+    
+    // 计算点击位置对应的时间
+    const rect = this.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const percent = clickX / rect.width;
+    const targetTime = percent * audioDuration;
+    
+    // 停止当前播放
+    if (source) {
+        source.stop();
+        cancelAnimationFrame(progressUpdateId);
+    }
+    
+    // 重新从目标时间开始播放
+    startTime = ctx.currentTime - targetTime;
+    source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    source.start(0, targetTime); // 从指定位置开始播放
+    
+    // 重新更新进度和歌词
+    updateProgress();
+    requestAnimationFrame(updateLyrics);
+});
+
+function parseLRC(text){
+    let lines=text.split("\n");
+    lyricsData=[];
+    for(let line of lines){
+        let match=line.match(/\[(\d+):(\d+\.?\d*)\](.*)/);
+        if(match){
+            let min=parseInt(match[1]);
+            let sec=parseFloat(match[2]);
+            let time=min*60+sec;
+            lyricsData.push({time,text:match[3].trim()});
+        }
+    }
+    lyricsData.sort((a,b)=>a.time-b.time);
+}
+
+document.getElementById("lrcFile").addEventListener("change",async e=>{
+    const file=e.target.files[0];
+    if(!file) return;
+    const text=await file.text();
+    parseLRC(text);
+});
+
+function start(){
+    if(!buffer) return alert("先分析音频");
+
+    bpm=parseFloat(document.getElementById("bpm").value);
+    offset=parseFloat(document.getElementById("offset").value)||0;
+    deviceLatency=parseFloat(document.getElementById("deviceLatency").value)||0;
+
+    clicks=[];
+    document.getElementById("count").innerText="0";
+
+    // 停止之前的播放（如果有）
+    if (source) {
+        source.stop();
+        cancelAnimationFrame(progressUpdateId);
+    }
+
+    source=ctx.createBufferSource();
+    source.buffer=buffer;
+    source.connect(ctx.destination);
+
+    startTime=ctx.currentTime;
+    source.start();
+    started=true;
+    currentLyricIndex=0;
+
+    // 新增：启动进度更新
+    updateProgress();
+
+    source.onended=()=>{
+        started=false;
+        cancelAnimationFrame(progressUpdateId); // 停止进度更新
+        // 进度条拉满
+        document.getElementById("progressBar").style.width = "100%";
+        document.getElementById("currentTime").textContent = formatTimeDisplay(audioDuration);
+        formatOutput();
+    };
+
+    requestAnimationFrame(updateLyrics);
+}
+
+function updateLyrics(){
+    if(!started) return;
+    let now=ctx.currentTime-startTime;
+
+    if(lyricsData.length>0 && currentLyricIndex<lyricsData.length-1){
+        if(now>=lyricsData[currentLyricIndex+1].time){
+            currentLyricIndex++;
+        }
+    }
+
+    if(lyricsData[currentLyricIndex]){
+        document.getElementById("lyrics").innerText=
+            lyricsData[currentLyricIndex].text;
+    }
+
+    requestAnimationFrame(updateLyrics);
+}
+
+document.getElementById("touchArea").addEventListener("pointerdown",e=>{
+    if(!started) return;
+
+    let now=(ctx.currentTime-startTime)*1000;
+    now-=deviceLatency;
+
+    if(now-lastTouch<MERGE_WINDOW) return;
+    lastTouch=now;
+
+    clicks.push(now);
+    document.getElementById("count").innerText=clicks.length;
+
+    const rect=e.currentTarget.getBoundingClientRect();
+    const ripple=document.createElement("div");
+    ripple.className="ripple";
+    ripple.style.left=(e.clientX-rect.left)+"px";
+    ripple.style.top=(e.clientY-rect.top)+"px";
+    e.currentTarget.appendChild(ripple);
+    setTimeout(()=>ripple.remove(),500);
+},{passive:true});
+
+function approximateFraction(x){
+    let best={num:0,den:1,err:Infinity};
+    for(let d of denominators){
+        let n=Math.round(x*d);
+        let val=n/d;
+        let err=Math.abs(val-x);
+        if(err<best.err) best={num:n,den:d,err};
+    }
+    return best;
+}
+
+function formatTime(ms){
+    ms=Math.max(0,ms+offset);
+    const m=Math.floor(ms/60000);
+    const s=Math.floor((ms%60000)/1000);
+    const milli=Math.floor(ms%1000);
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(milli).padStart(3,'0')}`;
+}
+
+function formatBeat(ms){
+    let beatLen=60000/bpm;
+    let total=(ms+offset)/beatLen;
+    let intPart=Math.floor(total);
+    let frac=total-intPart;
+    let approx=approximateFraction(frac);
+    if(approx.num===0) return `${intPart}`;
+    if(approx.num===approx.den) return `${intPart+1}`;
+    return `${intPart} ${approx.num}/${approx.den}`;
+}
+
+function formatOutput(){
+    let out="";
+    clicks.forEach(t=>{
+        out+=`[touch:${formatTime(t)}] No.${formatBeat(t)} beat\n`;
+    });
+    document.getElementById("output").textContent=out;
+    document.getElementById("exportBtn").style.display="inline";
+}
+
+document.getElementById("exportBtn").onclick=()=>{
+    const blob=new Blob([document.getElementById("output").textContent],{type:"text/plain"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="touch_data.txt";
+    a.click();
+};
+
+// 新增：音频文件选择时初始化总时长显示
+document.getElementById("audioFile").addEventListener("change", async function(e) {
+    const file = e.target.files[0];
+    if (!file) {
+        audioDuration = 0;
+        document.getElementById("totalTime").textContent = "00:00.00";
+        document.getElementById("currentTime").textContent = "00:00.00";
+        document.getElementById("progressBar").style.width = "0%";
+        buffer = null;
+        return;
+    }
+
+    // 提前获取音频时长（无需解码，更高效）
+    try {
+        const audio = new Audio();
+        audio.onloadedmetadata = function() {
+            audioDuration = audio.duration;
+            document.getElementById("totalTime").textContent = formatTimeDisplay(audioDuration);
+            URL.revokeObjectURL(audio.src);
+        };
+        audio.src = URL.createObjectURL(file);
+    } catch (err) {
+        console.error("获取音频时长失败:", err);
+    }
+});
+</script>
+
+</body>
+</html>
