@@ -1,435 +1,457 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<title>妈妈我不会采音</title>
-<h5>@Teak75035 孩子不懂事做着玩的</h5>
-<style>
-body{
-    background:#0f0f0f;
-    color:#00ff88;
-    font-family:monospace;
-    padding:20px;
-}
-input,button{
-    margin:5px 0;
-    padding:6px;
-    background:#1a1a1a;
-    color:#00ff88;
-    border:1px solid #00ff88;
-}
-#topBar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-#touchArea{
-    margin-top:20px;
-    height:55vh;
-    border:2px dashed #00ff88;
-    position:relative;
-    touch-action:none;
-    user-select:none;
-}
-.ripple{
-    position:absolute;
-    width:20px;
-    height:20px;
-    border:2px solid #00ff88;
-    border-radius:50%;
-    pointer-events:none;
-    transform:translate(-50%,-50%);
-    animation:rippleAnim 0.5s ease-out forwards;
-}
-@keyframes rippleAnim{
-    from{opacity:1;transform:translate(-50%,-50%) scale(0.5);}
-    to{opacity:0;transform:translate(-50%,-50%) scale(4);}
-}
-#lyrics{
-    margin-left:30px;
-    width:40%;
-    white-space:pre-wrap;
-    font-size:18px;
-    color:#ff77aa;
-}
-#output{
-    white-space:pre;
-    margin-top:20px;
-    background:#000;
-    padding:10px;
-}
-/* 新增进度条样式 */
-#progressContainer {
-    width: 100%;
-    height: 8px;
-    background-color: #1a1a1a;
-    border: 1px solid #00ff88;
-    margin: 15px 0;
-    cursor: pointer;
-    position: relative;
-}
-#progressBar {
-    height: 100%;
-    background-color: #00ff88;
-    width: 0%;
-    transition: width 0.1s linear;
-}
-#progressTime {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    color: #ffff88;
-    margin-bottom: 5px;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>椎名绫宫 - REALITY</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            border: none;
+            outline: none;
+        }
+
+        /* 雨滴动画容器 */
+        .rain-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        /* 雨滴样式 —— 更明显、更亮 */
+        .rain {
+            position: absolute;
+            background: linear-gradient(to top, rgba(255,255,255,0.25), rgba(255,255,255,0));
+            width: 2.5px;
+            height: 100px;
+            animation: rain-rise linear infinite;
+        }
+
+        /* 雨滴 从下往上 上升动画 */
+        @keyframes rain-rise {
+            0% { transform: translateY(100vh); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        body {
+            font-family: "SimSun", "宋体", serif;
+            background: #0a0a0a; /* 提亮一点点的黑 */
+            color: #e2e8f0;
+            line-height: 1.8;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* 毛玻璃 */
+        .glass {
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 导航栏 */
+        header {
+            width: 100%;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        nav {
+            width: 90%;
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 导航标题改为白色 */
+        .nav-title {
+            font-size: 1.4rem;
+            color: #ffffff;
+            letter-spacing: 1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #3b82f6;
+        }
+
+        /* Hero 区域 */
+        .hero {
+            width: 100%;
+            min-height: 42vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .hero h1 {
+            font-size: 2.4rem;
+            color: #ffffff;
+            margin-bottom: 0.8rem;
+            letter-spacing: 2px;
+        }
+
+        .hero .intro-text {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            max-width: 700px;
+            margin: 0.5rem 0;
+        }
+
+        /* 主内容 */
+        main {
+            width: 90%;
+            max-width: 900px;
+            margin: 3rem auto;
+            padding: 2rem;
+        }
+
+        .section {
+            margin-bottom: 5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .section h2 {
+            font-size: 1.7rem;
+            color: #3b82f6;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #1e293b;
+            width: fit-content;
+        }
+
+        .section p {
+            max-width: 700px;
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        /* 标签样式 */
+        .tag-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.8rem;
+            margin: 0.5rem 0 1.5rem 0;
+        }
+
+        .tag {
+            padding: 0.4rem 1.1rem;
+            background: #1e293b;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .tag:hover {
+            color: #3b82f6;
+        }
+
+        /* 项目卡片样式 */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .project-card {
+            background: rgba(30, 41, 59, 0.5);
+            padding: 1.8rem 1.5rem;
+            transition: 0.3s;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+        }
+
+        .project-card:hover {
+            border-color: #3b82f6;
+            transform: translateY(-4px);
+        }
+
+        .project-card h3 {
+            font-size: 1.25rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        /* 项目标签换行核心样式 */
+        .mark-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* 项目内标签 蓝色半透明样式 */
+        .mark {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.25);
+            color: #ffffff !important;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.85rem;
+            font-weight: normal;
+            border-radius: 4px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .project-card p {
+            color: #94a3b8;
+            margin-bottom: 1.2rem;
+        }
+
+        .project-card a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: 0.3s;
+        }
+        
+        .project-card a:hover {
+            color: #ffffff;
+        }
+
+        /* 提示区 - 已删除背景 */
+        .notice {
+            background: transparent;
+            padding: 0;
+            margin-top: 0;
+            width: 100%;
+            max-width: 700px;
+            border-radius: 0;
+        }
+
+        /* 页脚 */
+        footer {
+            width: 100%;
+            padding: 2rem 1rem;
+            border-top: 1px solid #1e293b;
+            margin-top: auto;
+        }
+
+        footer p {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin: 0.2rem 0;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .project-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
+
 <body>
+    <!-- 雨滴背景层 -->
+    <div class="rain-container" id="rain"></div>
 
-<h2>妈妈我不会采音</h2>
+    <!-- 导航 -->
+    <header class="glass">
+        <nav>
+            <div class="nav-title">椎名绫宫 · REALITY</div>
+            <div class="nav-links">
+                <a href="#who">我是谁</a>
+                <a href="#projects">项目</a>
+                <a href="#contact">联系</a>
+                <a href="#notice">须知</a>
+            </div>
+        </nav>
+    </header>
 
-<input type="file" id="audioFile" accept="audio/*"><br>
-<input type="file" id="lrcFile" accept=".lrc"><br>
+    <!-- Hero 区域 -->
+    <section class="hero glass">
+        <h1>请，重新认识我。</h1>
+        <p class="intro-text">Welcome to REALITY.</p>
+        <p class="intro-text">相识真是一件很困难的事情......<br>但我相信你，追寻者。<br>椎名绫宫，很高兴认识你。</p>
+    </section>
 
-<button onclick="analyze()">自动分析 BPM / Offset（不准慎用）</button>
-<div id="analysisResult"></div>
+    <!-- 内容 -->
+    <main class="glass">
+        <section id="who" class="section">
+            <h2>我是谁 · Self Definition</h2>
+            <p>涉猎广而不精的迷茫者，INFP-T。</p>
 
-<hr>
+            <!-- 第一组：技能标签 -->
+            <div class="tag-group">
+                <span class="tag">文字创作</span>
+                <span class="tag">Python/后端开发</span>
+                <span class="tag">Vocaloid</span>
+                <span class="tag">绘画</span>
+                <span class="tag">视觉小说</span>
+                <span class="tag">Android/Linux</span>
+                <span class="tag">UI设计</span>
+            </div>
 
-<label>BPM:</label><br>
-<input type="number" id="bpm" step="0.01"><br>
+            <!-- 第二组：游戏标签 -->
+            <div class="tag-group">
+                <span class="tag">初音未来：缤纷舞台</span>
+                <span class="tag">物华弥新</span>
+                <span class="tag">重返未来：1999</span>
+                <span class="tag">Phira</span>
+            </div>
 
-<label>Offset (±ms):</label><br>
-<input type="number" id="offset" step="1"><br>
+            <!-- 第三组：动漫标签 -->
+            <div class="tag-group">
+                <span class="tag">冬日树下的回忆</span>
+                <span class="tag">リコリス・リコイル</span>
+                <span class="tag">Happy Suger Life</span>
+                <span class="tag">超かぐや姫！</span>
+            </div>
 
-<label>设备音频延迟 (ms):</label><br>
-<input type="number" id="deviceLatency" step="1" value="0"><br>
+            <p>共鸣的旋律并不总是存在，所以......请珍惜吧。</p>
+        </section>
 
-<button onclick="start()">开始脑绘</button>
+        <section id="projects" class="section">
+            <h2>我的项目 · Projects for Everyone</h2>
+            <div class="project-grid">
+                <div class="project-card">
+                    <h3>残翼</h3>
+                    <div class="mark-group">
+                        <span class="mark">视觉小说</span>
+                        <span class="mark">进行中</span>
+                    </div>
+                    <p>平行线总在无穷远处相交，对吧？</p>
+                    <a href="#" target="_blank">项目主页</a>
+                </div>
+                <div class="project-card">
+                    <h3>时间 TIMER</h3>
+                    <div class="mark-group">
+                        <span class="mark">实用工具</span>
+                        <span class="mark">在线中</span>
+                    </div>
+                    <p>以指定时间为终点的简约倒计时工具。</p>
+                    <a href="#" target="_blank">在线使用</a>
+                </div>
+                <div class="project-card">
+                    <h3>PanelHUD</h3>
+                    <div class="mark-group">
+                        <span class="mark">GNOME 拓展</span>
+                        <span class="mark">维护中</span>
+                    </div>
+                    <p>在面板上显示文字并通过接口控制。</p>
+                    <a href="#" target="_blank">项目仓库</a>
+                </div>
+                <div class="project-card">
+                    <h3>Oxygen 3</h3>
+                    <div class="mark-group">
+                        <span class="mark">实用工具</span>
+                        <span class="mark">重构中</span>
+                    </div>
+                    <p>适用于教学环境的工具集及其附加组件。</p>
+                    <a href="#" target="_blank">暂停开放</a>
+                </div>
+            </div>
+        </section>
 
-<!-- 新增进度条区域 -->
-<div id="progressTime">
-    <span id="currentTime">00:00.00</span>
-    <span id="totalTime">00:00.00</span>
-</div>
-<div id="progressContainer">
-    <div id="progressBar"></div>
-</div>
+        <section id="contact" class="section">
+            <h2>找到我 · Connect to Reality</h2>
+            <!-- 联系方式 标签展示 -->
+            <div class="tag-group">
+                <a href="https://github.com/Teak75035/" target="_blank" class="tag">Github</a>
+                <a href="mailto:musicteak100@gmail.com" target="_blank" class="tag">Email</a>
+                <a href="https://t.me/lingxianww#" target="_blank" class="tag">Telegram</a>
+                <a href="https://space.bilibili.com/660590377" target="_blank" class="tag">Bilibili</a>
+                <a href="https://teaaaak.lofter.com/" target="_blank" class="tag">LOFTER</a>
+                <a href="tencent://AddContact/?uin=210308731" target="_blank" class="tag">QQ: 210308731</a>
+                <a href="#" target="_blank" class="tag">Other: no</a>
+            </div>
+        </section>
 
-<div id="topBar">
-    <h3>COMBO: <span id="count">0</span></h3>
-    <div id="lyrics"></div>
-</div>
+        <section id="notice" class="section">
+            <h2>请你知悉 · Before You Act</h2>
+            <div class="notice">
+                <p>在开始前，我希望你能尊重每个人的个人意愿。</p>
+                <p>请不要提及/讨论以下内容：</p>
+                <div class="tag-group">
+                    <span class="tag">福瑞/兽圈</span>
+                    <span class="tag">男同性恋</span>
+                    <span class="tag">米哈游</span>
+                    <span class="tag">政治立场</span>
+                    <span class="tag">未成年人色情</span>
+                </div>
+                <p>迷茫者会感谢你的尊重。</p>
+            </div>
+        </section>
+    </main>
 
-<div id="touchArea"></div>
+    <!-- 页脚 -->
+    <footer class="glass">
+        <p>愿星辰与你同在。</p>
+        <p>椎名绫宫 - 2026 - 本页面内容更改恕不另行通知。</p>
+    </footer>
 
-<div id="output"></div>
-<button id="exportBtn" style="display:none;">导出 TXT</button>
-
-<script>
-let ctx=new (window.AudioContext||window.webkitAudioContext)();
-let buffer=null;
-let source=null;
-let startTime=0;
-
-let clicks=[];
-let bpm=120;
-let offset=0;
-let deviceLatency=0;
-let started=false;
-
-let lyricsData=[];
-let currentLyricIndex=0;
-
-const MERGE_WINDOW=40;
-let lastTouch=0;
-// 仅保留2,3,4,8,16（按你的要求）
-const denominators=[2,3,4,8,16];
-
-// 新增：音频时长和进度相关变量
-let audioDuration = 0; // 音频总时长（秒）
-let progressUpdateId = null; // 进度更新动画帧ID
-
-// 格式化时间为 分:秒.毫秒 格式
-function formatTimeDisplay(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const sec = Math.floor(seconds % 60);
-    const ms = Math.floor((seconds % 1) * 100);
-    return `${String(minutes).padStart(2, '0')}:${String(sec).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
-}
-
-async function analyze(){
-    const file=document.getElementById("audioFile").files[0];
-    if(!file) return alert("选音频");
-
-    const arrayBuffer=await file.arrayBuffer();
-    buffer=await ctx.decodeAudioData(arrayBuffer);
-    
-    // 新增：保存音频总时长，并更新进度条总时间显示
-    audioDuration = buffer.duration;
-    document.getElementById("totalTime").textContent = formatTimeDisplay(audioDuration);
-
-    let data=buffer.getChannelData(0);
-    const sr=buffer.sampleRate;
-    const frame=1024, hop=512;
-
-    let energy=[];
-    for(let i=0;i<data.length-frame;i+=hop){
-        let sum=0;
-        for(let j=0;j<frame;j++) sum+=data[i+j]*data[i+j];
-        energy.push(Math.sqrt(sum));
-    }
-
-    let avg=energy.reduce((a,b)=>a+b,0)/energy.length;
-    let peaks=[];
-    for(let i=1;i<energy.length-1;i++){
-        if(energy[i]>avg*1.3 && energy[i]>energy[i-1] && energy[i]>energy[i+1])
-            peaks.push(i);
-    }
-
-    if(peaks.length<2) return alert("节拍不明显");
-
-    let intervals=[];
-    for(let i=1;i<peaks.length;i++)
-        intervals.push(peaks[i]-peaks[i-1]);
-
-    let avgInterval=intervals.reduce((a,b)=>a+b,0)/intervals.length;
-    let seconds=avgInterval*hop/sr;
-    bpm=60/seconds;
-    while(bpm<90) bpm*=2;
-    while(bpm>180) bpm/=2;
-
-    let firstPeakTime=peaks[0]*hop/sr*1000;
-    let beatLen=60000/bpm;
-    offset=firstPeakTime%beatLen;
-
-    document.getElementById("bpm").value=bpm.toFixed(2);
-    document.getElementById("offset").value=offset.toFixed(0);
-    document.getElementById("analysisResult").innerText=
-        `BPM: ${bpm.toFixed(2)}  Offset: ${offset.toFixed(0)}ms`;
-}
-
-// 新增：更新播放进度
-function updateProgress() {
-    if (!started || !buffer) return;
-    
-    // 计算当前播放时间（秒）
-    const currentTime = ctx.currentTime - startTime;
-    // 限制最大进度为音频总时长
-    const clampedTime = Math.min(currentTime, audioDuration);
-    
-    // 更新进度条宽度
-    const progressPercent = (clampedTime / audioDuration) * 100;
-    document.getElementById("progressBar").style.width = `${progressPercent}%`;
-    
-    // 更新当前时间显示
-    document.getElementById("currentTime").textContent = formatTimeDisplay(clampedTime);
-    
-    // 继续请求下一帧更新
-    progressUpdateId = requestAnimationFrame(updateProgress);
-}
-
-// 新增：进度条点击跳转（可选增强）
-document.getElementById("progressContainer").addEventListener("click", function(e) {
-    if (!started || !buffer) return;
-    
-    // 计算点击位置对应的时间
-    const rect = this.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const percent = clickX / rect.width;
-    const targetTime = percent * audioDuration;
-    
-    // 停止当前播放
-    if (source) {
-        source.stop();
-        cancelAnimationFrame(progressUpdateId);
-    }
-    
-    // 重新从目标时间开始播放
-    startTime = ctx.currentTime - targetTime;
-    source = ctx.createBufferSource();
-    source.buffer = buffer;
-    source.connect(ctx.destination);
-    source.start(0, targetTime); // 从指定位置开始播放
-    
-    // 重新更新进度和歌词
-    updateProgress();
-    requestAnimationFrame(updateLyrics);
-});
-
-function parseLRC(text){
-    let lines=text.split("\n");
-    lyricsData=[];
-    for(let line of lines){
-        let match=line.match(/\[(\d+):(\d+\.?\d*)\](.*)/);
-        if(match){
-            let min=parseInt(match[1]);
-            let sec=parseFloat(match[2]);
-            let time=min*60+sec;
-            lyricsData.push({time,text:match[3].trim()});
-        }
-    }
-    lyricsData.sort((a,b)=>a.time-b.time);
-}
-
-document.getElementById("lrcFile").addEventListener("change",async e=>{
-    const file=e.target.files[0];
-    if(!file) return;
-    const text=await file.text();
-    parseLRC(text);
-});
-
-function start(){
-    if(!buffer) return alert("先分析音频");
-
-    bpm=parseFloat(document.getElementById("bpm").value);
-    offset=parseFloat(document.getElementById("offset").value)||0;
-    deviceLatency=parseFloat(document.getElementById("deviceLatency").value)||0;
-
-    clicks=[];
-    document.getElementById("count").innerText="0";
-
-    // 停止之前的播放（如果有）
-    if (source) {
-        source.stop();
-        cancelAnimationFrame(progressUpdateId);
-    }
-
-    source=ctx.createBufferSource();
-    source.buffer=buffer;
-    source.connect(ctx.destination);
-
-    startTime=ctx.currentTime;
-    source.start();
-    started=true;
-    currentLyricIndex=0;
-
-    // 新增：启动进度更新
-    updateProgress();
-
-    source.onended=()=>{
-        started=false;
-        cancelAnimationFrame(progressUpdateId); // 停止进度更新
-        // 进度条拉满
-        document.getElementById("progressBar").style.width = "100%";
-        document.getElementById("currentTime").textContent = formatTimeDisplay(audioDuration);
-        formatOutput();
-    };
-
-    requestAnimationFrame(updateLyrics);
-}
-
-function updateLyrics(){
-    if(!started) return;
-    let now=ctx.currentTime-startTime;
-
-    if(lyricsData.length>0 && currentLyricIndex<lyricsData.length-1){
-        if(now>=lyricsData[currentLyricIndex+1].time){
-            currentLyricIndex++;
-        }
-    }
-
-    if(lyricsData[currentLyricIndex]){
-        document.getElementById("lyrics").innerText=
-            lyricsData[currentLyricIndex].text;
-    }
-
-    requestAnimationFrame(updateLyrics);
-}
-
-document.getElementById("touchArea").addEventListener("pointerdown",e=>{
-    if(!started) return;
-
-    let now=(ctx.currentTime-startTime)*1000;
-    now-=deviceLatency;
-
-    if(now-lastTouch<MERGE_WINDOW) return;
-    lastTouch=now;
-
-    clicks.push(now);
-    document.getElementById("count").innerText=clicks.length;
-
-    const rect=e.currentTarget.getBoundingClientRect();
-    const ripple=document.createElement("div");
-    ripple.className="ripple";
-    ripple.style.left=(e.clientX-rect.left)+"px";
-    ripple.style.top=(e.clientY-rect.top)+"px";
-    e.currentTarget.appendChild(ripple);
-    setTimeout(()=>ripple.remove(),500);
-},{passive:true});
-
-function approximateFraction(x){
-    let best={num:0,den:1,err:Infinity};
-    for(let d of denominators){
-        let n=Math.round(x*d);
-        let val=n/d;
-        let err=Math.abs(val-x);
-        if(err<best.err) best={num:n,den:d,err};
-    }
-    return best;
-}
-
-function formatTime(ms){
-    ms=Math.max(0,ms+offset);
-    const m=Math.floor(ms/60000);
-    const s=Math.floor((ms%60000)/1000);
-    const milli=Math.floor(ms%1000);
-    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(milli).padStart(3,'0')}`;
-}
-
-function formatBeat(ms){
-    let beatLen=60000/bpm;
-    let total=(ms+offset)/beatLen;
-    let intPart=Math.floor(total);
-    let frac=total-intPart;
-    let approx=approximateFraction(frac);
-    if(approx.num===0) return `${intPart}`;
-    if(approx.num===approx.den) return `${intPart+1}`;
-    return `${intPart} ${approx.num}/${approx.den}`;
-}
-
-function formatOutput(){
-    let out="";
-    clicks.forEach(t=>{
-        out+=`[touch:${formatTime(t)}] No.${formatBeat(t)} beat\n`;
-    });
-    document.getElementById("output").textContent=out;
-    document.getElementById("exportBtn").style.display="inline";
-}
-
-document.getElementById("exportBtn").onclick=()=>{
-    const blob=new Blob([document.getElementById("output").textContent],{type:"text/plain"});
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(blob);
-    a.download="touch_data.txt";
-    a.click();
-};
-
-// 新增：音频文件选择时初始化总时长显示
-document.getElementById("audioFile").addEventListener("change", async function(e) {
-    const file = e.target.files[0];
-    if (!file) {
-        audioDuration = 0;
-        document.getElementById("totalTime").textContent = "00:00.00";
-        document.getElementById("currentTime").textContent = "00:00.00";
-        document.getElementById("progressBar").style.width = "0%";
-        buffer = null;
-        return;
-    }
-
-    // 提前获取音频时长（无需解码，更高效）
-    try {
-        const audio = new Audio();
-        audio.onloadedmetadata = function() {
-            audioDuration = audio.duration;
-            document.getElementById("totalTime").textContent = formatTimeDisplay(audioDuration);
-            URL.revokeObjectURL(audio.src);
+    <!-- 雨滴上升脚本 -->
+    <script>
+        const rainContainer = document.getElementById('rain');
+        const createRain = () => {
+            const rainDrop = document.createElement('div');
+            rainDrop.classList.add('rain');
+            
+            const left = Math.random() * 100;
+            const duration = Math.random() * 1.8 + 1.2;
+            const height = Math.random() * 70 + 50;
+            
+            rainDrop.style.left = left + '%';
+            rainDrop.style.height = height + 'px';
+            rainDrop.style.animationDuration = duration + 's';
+            
+            rainContainer.appendChild(rainDrop);
+            
+            setTimeout(() => {
+                rainDrop.remove();
+            }, duration * 1000);
         };
-        audio.src = URL.createObjectURL(file);
-    } catch (err) {
-        console.error("获取音频时长失败:", err);
-    }
-});
-</script>
-
+        
+        // 降雨密度
+        setInterval(createRain, 35);
+    </script>
 </body>
 </html>
