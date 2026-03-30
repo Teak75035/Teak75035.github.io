@@ -48,10 +48,10 @@
             overflow: hidden;
         }
 
-        /* 雨滴样式 —— 更明显、更亮 */
+        /* 雨滴样式 —— 纯白色 */
         .rain {
             position: absolute;
-            background: linear-gradient(to top, rgba(255,255,25,0.25), rgba(255,255,255,0));
+            background: linear-gradient(to top, rgba(255,255,255,0.8), rgba(255,255,255,0));
             width: 2.5px;
             height: 100px;
             animation: rain-rise linear infinite;
@@ -76,10 +76,10 @@
             position: relative;
         }
 
-        /* 毛玻璃 —— 模糊减小 */
+        /* 毛玻璃 */
         .glass {
             background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(5px);   /* 从10px减小到5px */
+            backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
@@ -87,7 +87,7 @@
         /* 导航栏 */
         header {
             width: 100%;
-            padding: 1rem 0;
+            padding: 1.2rem 0; /* 增大上下内边距 */
             position: sticky;
             top: 0;
             z-index: 999;
@@ -103,13 +103,17 @@
             align-items: center;
         }
 
-        /* 导航标题改为白色 */
         .nav-title {
             font-size: 1.4rem;
             color: #ffffff;
             letter-spacing: 1px;
         }
 
+        /* 导航链接间距调整 */
+        .nav-links {
+            display: flex;
+            gap: 1.8rem; /* 链接之间的间距，可自行修改 */
+        }
         .nav-links a {
             color: #cbd5e1;
             text-decoration: none;
@@ -117,7 +121,7 @@
             transition: 0.3s;
         }
         .nav-links a:hover {
-            color: #ec5a0c;
+            color: #4299e1;
         }
 
         /* Hero 区域 */
@@ -159,7 +163,7 @@
         }
         .section h2 {
             font-size: 1.7rem;
-            color: #ec5a0c;
+            color: #4299e1;
             margin-bottom: 1.5rem;
             padding-bottom: 0.5rem;
             border-bottom: 1px solid #1e293b;
@@ -171,7 +175,7 @@
             color: #cbd5e1;
         }
 
-        /* ========== 标签样式 ========== */
+        /* 标签样式 */
         .tag-group {
             display: flex;
             flex-wrap: wrap;
@@ -181,17 +185,17 @@
         }
         .tag {
             padding: 0.4rem 1.1rem;
-            background: rgba(236, 90, 12, 0.3); /* 30% 不透明度 */
+            background: rgba(66, 153, 225, 0.3);
             color: #ffffff;
             font-size: 0.9rem;
             border-radius: 4px;
             text-decoration: none;
             transition: 0.3s;
-            border: 1px solid rgba(236, 90, 12, 0.4); /* 描边 */
+            border: 1px solid rgba(66, 153, 225, 0.4);
         }
         .tag:hover {
-            background: rgba(236, 90, 12, 0.4);
-            border-color: rgba(236, 90, 12, 0.6);
+            background: rgba(66, 153, 225, 0.4);
+            border-color: rgba(66, 153, 225, 0.6);
         }
 
         /* 项目卡片 */
@@ -203,7 +207,6 @@
             margin-top: 1rem;
         }
         .project-card {
-            /* 项目卡片背景改为 70% 不透明度 */
             background: rgba(30, 41, 59, 0.7);
             padding: 1.8rem 1.5rem;
             transition: 0.3s;
@@ -211,7 +214,7 @@
             border-radius: 8px;
         }
         .project-card:hover {
-            border-color: #ec5a0c;
+            border-color: #4299e1;
             transform: translateY(-4px);
         }
         .project-card h3 {
@@ -230,13 +233,13 @@
         }
         .mark {
             display: inline-block;
-            background: rgba(236, 90, 12, 0.3);
+            background: rgba(66, 153, 225, 0.3);
             color: #ffffff !important;
             padding: 0.3rem 0.8rem;
             font-size: 0.85rem;
             font-weight: normal;
             border-radius: 4px;
-            border: 1px solid rgba(236, 90, 12, 0.4);
+            border: 1px solid rgba(66, 153, 225, 0.4);
         }
 
         .project-card p {
@@ -244,7 +247,7 @@
             margin-bottom: 1.2rem;
         }
         .project-card a {
-            color: #ec5a0c;
+            color: #4299e1;
             text-decoration: none;
             font-size: 0.95rem;
             transition: 0.3s;
@@ -342,7 +345,7 @@
                         <span class="mark">进行中</span>
                     </div>
                     <p>平行线总在无穷远处相交，对吧？</p>
-                    <a href="#" target="_blank">项目主页</a>
+                    <a href="https://teak75035.github.io/broken-wings" target="_blank">项目主页</a>
                 </div>
                 <div class="project-card">
                     <h3>时间 TIMER</h3>
@@ -351,7 +354,7 @@
                         <span class="mark">在线中</span>
                     </div>
                     <p>以指定时间为终点的简约倒计时工具。</p>
-                    <a href="#" target="_blank">在线使用</a>
+                    <a href="https://teak75035.github.io/timer" target="_blank">在线使用</a>
                 </div>
                 <div class="project-card">
                     <h3>PanelHUD</h3>
@@ -360,7 +363,7 @@
                         <span class="mark">维护中</span>
                     </div>
                     <p>在面板上显示文字并通过接口控制。</p>
-                    <a href="#" target="_blank">项目仓库</a>
+                    <a href="https://github.com/Teak75035/panelhud-gnome-extension" target="_blank">项目仓库</a>
                 </div>
                 <div class="project-card">
                     <h3>Oxygen 3</h3>
