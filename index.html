@@ -12,8 +12,6 @@
             border: none;
             outline: none;
         }
-
-        /* 全局背景 + 黑色60%遮罩 */
         body::before {
             content: '';
             position: fixed;
@@ -31,12 +29,28 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6); /* 黑色60%遮罩 */
+            background: rgba(0, 0, 0, 0.6);
             z-index: -1;
             pointer-events: none;
         }
-
-        /* 雨滴动画容器 */
+        /* 云雾层 */
+        .fog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.025);
+            pointer-events: none;
+            z-index: 1;
+            animation: fog-float 25s linear infinite;
+            opacity: 0.3;
+        }
+        @keyframes fog-float {
+            0% { transform: translateY(10px); opacity: 0.2; }
+            50% { transform: translateY(-10px); opacity: 0.4; }
+            100% { transform: translateY(10px); opacity: 0.2; }
+        }
         .rain-container {
             position: fixed;
             top: 0;
@@ -47,21 +61,49 @@
             z-index: 0;
             overflow: hidden;
         }
-
-        /* 雨滴样式 —— 纯白色 */
         .rain {
             position: absolute;
-            background: linear-gradient(to top, rgba(255,255,255,0.8), rgba(255,255,255,0));
-            width: 2.5px;
-            height: 100px;
+            background: linear-gradient(to top, 
+              rgba(255,255,255,0.95) 0%, 
+              rgba(255,255,255,0.6) 50%, 
+              rgba(255,255,255,0) 100%
+            );
+            width: 1.8px;
+            height: 85px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            opacity: 0.85;
             animation: rain-rise linear infinite;
         }
-
-        /* 雨滴 从下往上 上升动画 */
         @keyframes rain-rise {
             0% { transform: translateY(100vh); opacity: 0; }
             10% { opacity: 1; }
             100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        /* ———— 新增：水滴溅射到屏幕效果 ———— */
+        .splash {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 20;
+            animation: splash-animation 0.6s ease-out forwards;
+        }
+        @keyframes splash-animation {
+            0% {
+                opacity: 1;
+                transform: scale(0.2);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.2);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.8);
+            }
         }
 
         body {
@@ -75,25 +117,22 @@
             text-align: center;
             position: relative;
         }
-
-        /* 毛玻璃 */
         .glass {
             background: rgba(0, 0, 0, 0.65);
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 10;
         }
-
-        /* 导航栏 */
         header {
             width: 100%;
-            padding: 1.2rem 0; /* 增大上下内边距 */
+            padding: 1.2rem 0;
             position: sticky;
             top: 0;
             z-index: 999;
             border-bottom: 1px solid #1e293b;
         }
-
         nav {
             width: 90%;
             max-width: 1000px;
@@ -102,17 +141,14 @@
             justify-content: space-between;
             align-items: center;
         }
-
         .nav-title {
             font-size: 1.4rem;
             color: #ffffff;
             letter-spacing: 1px;
         }
-
-        /* 导航链接间距调整 */
         .nav-links {
             display: flex;
-            gap: 1.8rem; /* 链接之间的间距，可自行修改 */
+            gap: 1.8rem;
         }
         .nav-links a {
             color: #cbd5e1;
@@ -123,8 +159,6 @@
         .nav-links a:hover {
             color: #4299e1;
         }
-
-        /* Hero 区域 */
         .hero {
             width: 100%;
             min-height: 42vh;
@@ -147,8 +181,6 @@
             max-width: 700px;
             margin: 0.5rem 0;
         }
-
-        /* 主内容 */
         main {
             width: 90%;
             max-width: 900px;
@@ -174,8 +206,6 @@
             margin-bottom: 1rem;
             color: #cbd5e1;
         }
-
-        /* 标签样式 */
         .tag-group {
             display: flex;
             flex-wrap: wrap;
@@ -197,8 +227,6 @@
             background: rgba(66, 153, 225, 0.4);
             border-color: rgba(66, 153, 225, 0.6);
         }
-
-        /* 项目卡片 */
         .project-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -222,8 +250,6 @@
             color: #fff;
             margin-bottom: 0.5rem;
         }
-
-        /* 项目内小标签 */
         .mark-group {
             display: flex;
             flex-wrap: wrap;
@@ -241,7 +267,6 @@
             border-radius: 4px;
             border: 1px solid rgba(66, 153, 225, 0.4);
         }
-
         .project-card p {
             color: #94a3b8;
             margin-bottom: 1.2rem;
@@ -255,7 +280,6 @@
         .project-card a:hover {
             color: #ffffff;
         }
-
         .notice {
             background: transparent;
             padding: 0;
@@ -264,8 +288,6 @@
             max-width: 700px;
             border-radius: 0;
         }
-
-        /* 页脚 */
         footer {
             width: 100%;
             padding: 2rem 1rem;
@@ -277,8 +299,6 @@
             font-size: 0.95rem;
             margin: 0.2rem 0;
         }
-
-        /* 响应式 */
         @media (max-width: 768px) {
             nav { flex-direction: column; gap: 1rem; }
             .hero h1 { font-size: 2rem; }
@@ -286,9 +306,10 @@
         }
     </style>
 </head>
-
 <body>
+    <div class="fog"></div>
     <div class="rain-container" id="rain"></div>
+
     <header class="glass">
         <nav>
             <div class="nav-title">椎名绫宫 · REALITY</div>
@@ -300,13 +321,11 @@
             </div>
         </nav>
     </header>
-
     <section class="hero glass">
         <h1>请，重新认识我。</h1>
         <p class="intro-text">Welcome to REALITY.</p>
         <p class="intro-text">相识真是一件很困难的事情......<br>但我相信你，追寻者。<br>椎名绫宫，很高兴认识你。</p>
     </section>
-
     <main class="glass">
         <section id="who" class="section">
             <h2>我是谁 · Self Definition</h2>
@@ -334,7 +353,6 @@
             </div>
             <p>共鸣的旋律并不总是存在，所以......请珍惜吧。</p>
         </section>
-
         <section id="projects" class="section">
             <h2>我的项目 · Projects for Everyone</h2>
             <div class="project-grid">
@@ -376,7 +394,6 @@
                 </div>
             </div>
         </section>
-
         <section id="contact" class="section">
             <h2>找到我 · Connect to Reality</h2>
             <div class="tag-group">
@@ -389,7 +406,6 @@
                 <a href="#" target="_blank" class="tag">Other: no</a>
             </div>
         </section>
-
         <section id="notice" class="section">
             <h2>请你知悉 · Before You Act</h2>
             <div class="notice">
@@ -406,7 +422,6 @@
             </div>
         </section>
     </main>
-
     <footer class="glass">
         <p>愿星辰与你同在。</p>
         <p>椎名绫宫 - 2026 - 本页面内容更改恕不另行通知。</p>
@@ -414,6 +429,18 @@
 
     <script>
         const rainContainer = document.getElementById('rain');
+        
+        // 生成溅射效果
+        function createSplash(x, y) {
+            const splash = document.createElement('div');
+            splash.classList.add('splash');
+            splash.style.left = x + 'px';
+            splash.style.top = y + 'px';
+            document.body.appendChild(splash);
+            setTimeout(() => splash.remove(), 600);
+        }
+
+        // 降低雨滴密度：从35ms → 120ms，更稀疏
         const createRain = () => {
             const rainDrop = document.createElement('div');
             rainDrop.classList.add('rain');
@@ -424,9 +451,6 @@
             rainDrop.style.height = height + 'px';
             rainDrop.style.animationDuration = duration + 's';
             rainContainer.appendChild(rainDrop);
-            setTimeout(() => { rainDrop.remove(); }, duration * 1000);
-        };
-        setInterval(createRain, 35);
     </script>
 </body>
 </html>
