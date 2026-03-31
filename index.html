@@ -33,24 +33,7 @@
             z-index: -1;
             pointer-events: none;
         }
-        /* 云雾层 */
-        .fog {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,255,255,0.025);
-            pointer-events: none;
-            z-index: 1;
-            animation: fog-float 25s linear infinite;
-            opacity: 0.3;
-        }
-        @keyframes fog-float {
-            0% { transform: translateY(10px); opacity: 0.2; }
-            50% { transform: translateY(-10px); opacity: 0.4; }
-            100% { transform: translateY(10px); opacity: 0.2; }
-        }
+
         .rain-container {
             position: fixed;
             top: 0;
@@ -80,32 +63,6 @@
             100% { transform: translateY(-100vh); opacity: 0; }
         }
 
-        /* ———— 新增：水滴溅射到屏幕效果 ———— */
-        .splash {
-            position: fixed;
-            width: 8px;
-            height: 8px;
-            background: rgba(255,255,255,0.8);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 20;
-            animation: splash-animation 0.6s ease-out forwards;
-        }
-        @keyframes splash-animation {
-            0% {
-                opacity: 1;
-                transform: scale(0.2);
-            }
-            50% {
-                opacity: 0.8;
-                transform: scale(1.2);
-            }
-            100% {
-                opacity: 0;
-                transform: scale(1.8);
-            }
-        }
-
         body {
             font-family: "SimSun", "宋体", serif;
             color: #e2e8f0;
@@ -117,6 +74,18 @@
             text-align: center;
             position: relative;
         }
+
+        /* 滚动重播动画基础类 */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        .fade-in-section.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         .glass {
             background: rgba(0, 0, 0, 0.65);
             backdrop-filter: blur(5px);
@@ -128,8 +97,9 @@
         header {
             width: 100%;
             padding: 1.2rem 0;
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
             z-index: 999;
             border-bottom: 1px solid #1e293b;
         }
@@ -154,10 +124,11 @@
             color: #cbd5e1;
             text-decoration: none;
             font-size: 1rem;
-            transition: 0.3s;
+            transition: all 0.3s ease;
         }
         .nav-links a:hover {
-            color: #4299e1;
+            color: #ccbdb9;
+            transform: translateY(-2px);
         }
         .hero {
             width: 100%;
@@ -167,20 +138,34 @@
             justify-content: center;
             align-items: center;
             padding: 2rem;
-            border-bottom: 1px solid #1e293b;
+            padding-top: 8rem;
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            box-shadow: none !important;
+            z-index: 10;
         }
-        .hero h1 {
+        /* 关键：保留所有空格，不合并 */
+        .typewriter {
+            opacity: 0;
+            white-space: pre-wrap !important;
+            word-wrap: break-word;
+        }
+        .hero h1.typewriter {
             font-size: 2.4rem;
-            color: #ffffff;
+            color: #ccbdb9;
             margin-bottom: 0.8rem;
             letter-spacing: 2px;
+            width: fit-content;
+            white-space: nowrap !important;
         }
-        .hero .intro-text {
+        .hero p.typewriter {
             font-size: 1.1rem;
-            color: #94a3b8;
-            max-width: 700px;
-            margin: 0.5rem 0;
+            color: #ffffff;
+            width: fit-content;
+            white-space: nowrap !important;
         }
+
         main {
             width: 90%;
             max-width: 900px;
@@ -195,7 +180,7 @@
         }
         .section h2 {
             font-size: 1.7rem;
-            color: #4299e1;
+            color: #ccbdb9;
             margin-bottom: 1.5rem;
             padding-bottom: 0.5rem;
             border-bottom: 1px solid #1e293b;
@@ -215,17 +200,19 @@
         }
         .tag {
             padding: 0.4rem 1.1rem;
-            background: rgba(66, 153, 225, 0.3);
+            background: rgba(0, 0, 0, 0.5);
             color: #ffffff;
             font-size: 0.9rem;
             border-radius: 4px;
             text-decoration: none;
-            transition: 0.3s;
-            border: 1px solid rgba(66, 153, 225, 0.4);
+            transition: all 0.25s ease;
+            border: 1px solid rgba(255,255,255,0.2);
         }
         .tag:hover {
-            background: rgba(66, 153, 225, 0.4);
-            border-color: rgba(66, 153, 225, 0.6);
+            background: rgba(0, 0, 0, 0.6);
+            border-color: #ccbdb988;
+            transform: translateY(-2px);
+            box-shadow: 0 0 8px #ccbdb933;
         }
         .project-grid {
             display: grid;
@@ -235,15 +222,16 @@
             margin-top: 1rem;
         }
         .project-card {
-            background: rgba(30, 41, 59, 0.7);
+            background: rgba(0, 0, 0, 0.5);
             padding: 1.8rem 1.5rem;
-            transition: 0.3s;
+            transition: all 0.35s ease;
             border: 1px solid #1e293b;
             border-radius: 8px;
         }
         .project-card:hover {
-            border-color: #4299e1;
-            transform: translateY(-4px);
+            border-color: #ccbdb9;
+            transform: translateY(-6px);
+            box-shadow: 0 8px 25px #ccbdb922;
         }
         .project-card h3 {
             font-size: 1.25rem;
@@ -259,26 +247,31 @@
         }
         .mark {
             display: inline-block;
-            background: rgba(66, 153, 225, 0.3);
+            background: rgba(0, 0, 0, 0.5);
             color: #ffffff !important;
             padding: 0.3rem 0.8rem;
             font-size: 0.85rem;
             font-weight: normal;
             border-radius: 4px;
-            border: 1px solid rgba(66, 153, 225, 0.4);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.25s ease;
+        }
+        .mark:hover {
+            border-color: #ccbdb988;
         }
         .project-card p {
             color: #94a3b8;
             margin-bottom: 1.2rem;
         }
         .project-card a {
-            color: #4299e1;
+            color: #ccbdb9;
             text-decoration: none;
             font-size: 0.95rem;
-            transition: 0.3s;
+            transition: all 0.3s ease;
         }
         .project-card a:hover {
             color: #ffffff;
+            text-shadow: 0 0 6px #ccbdb955;
         }
         .notice {
             background: transparent;
@@ -307,7 +300,6 @@
     </style>
 </head>
 <body>
-    <div class="fog"></div>
     <div class="rain-container" id="rain"></div>
 
     <header class="glass">
@@ -321,42 +313,41 @@
             </div>
         </nav>
     </header>
-    <section class="hero glass">
-        <h1>请，重新认识我。</h1>
-        <p class="intro-text">Welcome to REALITY.</p>
-        <p class="intro-text">相识真是一件很困难的事情......<br>但我相信你，追寻者。<br>椎名绫宫，很高兴认识你。</p>
+    
+    <section class="hero">
+        <h1 class="typewriter">请，重新认识我。</h1>
+        <p class="typewriter line1">Welcome to REALITY.</p>
+        <p class="typewriter line2">相识真是一件很困难的事情......</p>
+        <p class="typewriter line3">但我相信你，追寻者。</p>
+        <p class="typewriter line4">椎名绫宫，很高兴认识你。</p>
     </section>
+    
     <main class="glass">
-        <section id="who" class="section">
+        <section id="who" class="section fade-in-section">
             <h2>我是谁 · Self Definition</h2>
             <p>涉猎广而不精的迷茫者，INFP-T。</p>
             <div class="tag-group">
-                <span class="tag">文字创作</span>
-                <span class="tag">Python/后端开发</span>
-                <span class="tag">Vocaloid</span>
-                <span class="tag">绘画</span>
-                <span class="tag">视觉小说</span>
-                <span class="tag">Android/Linux</span>
-                <span class="tag">UI设计</span>
+                <span class="tag fade-in-section">文字创作</span>
+                <span class="tag fade-in-section">Python/后端开发</span>
+                <span class="tag fade-in-section">Vocaloid</span>
+                <span class="tag fade-in-section">绘画</span>
+                <span class="tag fade-in-section">视觉小说</span>
+                <span class="tag fade-in-section">Android/Linux</span>
+                <span class="tag fade-in-section">UI设计</span>
             </div>
             <div class="tag-group">
-                <span class="tag">初音未来：缤纷舞台</span>
-                <span class="tag">物华弥新</span>
-                <span class="tag">重返未来：1999</span>
-                <span class="tag">Phira</span>
-            </div>
-            <div class="tag-group">
-                <span class="tag">冬日树下的回忆</span>
-                <span class="tag">リコリス・リコイル</span>
-                <span class="tag">Happy Suger Life</span>
-                <span class="tag">超かぐや姫！</span>
+                <span class="tag fade-in-section">初音未来：缤纷舞台</span>
+                <span class="tag fade-in-section">物华弥新</span>
+                <span class="tag fade-in-section">重返未来：1999</span>
+                <span class="tag fade-in-section">Phira</span>
             </div>
             <p>共鸣的旋律并不总是存在，所以......请珍惜吧。</p>
         </section>
-        <section id="projects" class="section">
+
+        <section id="projects" class="section fade-in-section">
             <h2>我的项目 · Projects for Everyone</h2>
             <div class="project-grid">
-                <div class="project-card">
+                <div class="project-card fade-in-section">
                     <h3>残翼</h3>
                     <div class="mark-group">
                         <span class="mark">视觉小说</span>
@@ -365,7 +356,7 @@
                     <p>平行线总在无穷远处相交，对吧？</p>
                     <a href="https://teak75035.github.io/broken-wings" target="_blank">项目主页</a>
                 </div>
-                <div class="project-card">
+                <div class="project-card fade-in-section">
                     <h3>时间 TIMER</h3>
                     <div class="mark-group">
                         <span class="mark">实用工具</span>
@@ -374,7 +365,7 @@
                     <p>以指定时间为终点的简约倒计时工具。</p>
                     <a href="https://teak75035.github.io/timer" target="_blank">在线使用</a>
                 </div>
-                <div class="project-card">
+                <div class="project-card fade-in-section">
                     <h3>PanelHUD</h3>
                     <div class="mark-group">
                         <span class="mark">GNOME 拓展</span>
@@ -383,7 +374,7 @@
                     <p>在面板上显示文字并通过接口控制。</p>
                     <a href="https://github.com/Teak75035/panelhud-gnome-extension" target="_blank">项目仓库</a>
                 </div>
-                <div class="project-card">
+                <div class="project-card fade-in-section">
                     <h3>Oxygen 3</h3>
                     <div class="mark-group">
                         <span class="mark">实用工具</span>
@@ -394,63 +385,97 @@
                 </div>
             </div>
         </section>
-        <section id="contact" class="section">
+
+        <section id="contact" class="section fade-in-section">
             <h2>找到我 · Connect to Reality</h2>
             <div class="tag-group">
-                <a href="https://github.com/Teak75035/" target="_blank" class="tag">Github</a>
-                <a href="mailto:musicteak100@gmail.com" target="_blank" class="tag">Email</a>
-                <a href="https://t.me/lingxianww#" target="_blank" class="tag">Telegram</a>
-                <a href="https://space.bilibili.com/660590377" target="_blank" class="tag">Bilibili</a>
-                <a href="https://teaaaak.lofter.com/" target="_blank" class="tag">LOFTER</a>
-                <a href="tencent://AddContact/?uin=210308731" target="_blank" class="tag">QQ: 210308731</a>
-                <a href="#" target="_blank" class="tag">Other: no</a>
+                <a href="https://github.com/Teak75035/" target="_blank" class="tag fade-in-section">Github</a>
+                <a href="mailto:musicteak100@gmail.com" target="_blank" class="tag fade-in-section">Email</a>
+                <a href="https://t.me/lingxianww#" target="_blank" class="tag fade-in-section">Telegram</a>
+                <a href="https://space.bilibili.com/660590377" target="_blank" class="tag fade-in-section">Bilibili</a>
+                <a href="https://teaaaak.lofter.com/" target="_blank" class="tag fade-in-section">LOFTER</a>
+                <a href="tencent://AddContact/?uin=210308731" target="_blank" class="tag fade-in-section">QQ: 210308731</a>
             </div>
         </section>
-        <section id="notice" class="section">
+
+        <section id="notice" class="section fade-in-section">
             <h2>请你知悉 · Before You Act</h2>
             <div class="notice">
                 <p>在开始前，我希望你能尊重每个人的个人意愿。</p>
                 <p>请不要提及/讨论以下内容：</p>
                 <div class="tag-group">
-                    <span class="tag">福瑞/兽圈</span>
-                    <span class="tag">男同性恋</span>
-                    <span class="tag">米哈游</span>
-                    <span class="tag">政治立场</span>
-                    <span class="tag">未成年人色情</span>
+                    <span class="tag fade-in-section">福瑞/兽圈</span>
+                    <span class="tag fade-in-section">男同性恋</span>
+                    <span class="tag fade-in-section">米哈游</span>
+                    <span class="tag fade-in-section">政治立场</span>
+                    <span class="tag fade-in-section">未成年人色情</span>
                 </div>
                 <p>迷茫者会感谢你的尊重。</p>
             </div>
         </section>
     </main>
+
     <footer class="glass">
         <p>愿星辰与你同在。</p>
         <p>椎名绫宫 - 2026 - 本页面内容更改恕不另行通知。</p>
     </footer>
 
     <script>
+        // 雨滴
         const rainContainer = document.getElementById('rain');
-        
-        // 生成溅射效果
-        function createSplash(x, y) {
-            const splash = document.createElement('div');
-            splash.classList.add('splash');
-            splash.style.left = x + 'px';
-            splash.style.top = y + 'px';
-            document.body.appendChild(splash);
-            setTimeout(() => splash.remove(), 600);
-        }
-
-        // 降低雨滴密度：从35ms → 120ms，更稀疏
-        const createRain = () => {
+        function createRain() {
             const rainDrop = document.createElement('div');
             rainDrop.classList.add('rain');
             const left = Math.random() * 100;
-            const duration = Math.random() * 1.8 + 1.2;
+            const duration = Math.random() * 2 + 1.5;
             const height = Math.random() * 70 + 50;
+            const opacity = Math.random() * 0.3 + 0.6;
+            
             rainDrop.style.left = left + '%';
             rainDrop.style.height = height + 'px';
             rainDrop.style.animationDuration = duration + 's';
+            rainDrop.style.opacity = opacity;
+            
             rainContainer.appendChild(rainDrop);
+            setTimeout(() => rainDrop.remove(), duration * 1000);
+        }
+        setInterval(createRain, 110);
+
+        // 滚动时元素自动重播动画
+        const fadeElements = document.querySelectorAll('.fade-in-section');
+        function checkVisibility() {
+            fadeElements.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                const isVisible = rect.top < window.innerHeight * 0.85 && rect.bottom > 0;
+                if (isVisible) {
+                    el.classList.add('is-visible');
+                } else {
+                    el.classList.remove('is-visible');
+                }
+            });
+        }
+        window.addEventListener('scroll', checkVisibility);
+        window.addEventListener('load', checkVisibility);
+
+        // ✅ 逐字打字（完美保留英文空格）
+        document.addEventListener('DOMContentLoaded', () => {
+            const elements = document.querySelectorAll('.hero .typewriter');
+            const charDelay = 80;
+            let totalTime = 0;
+
+            elements.forEach(el => {
+                const text = el.textContent;
+                el.textContent = '';
+                el.style.opacity = 1;
+
+                for (let i = 0; i < text.length; i++) {
+                    setTimeout(() => {
+                        el.textContent += text[i];
+                    }, totalTime);
+                    totalTime += charDelay;
+                }
+            });
+        });
     </script>
 </body>
 </html>
