@@ -12,6 +12,10 @@
             border: none;
             outline: none;
         }
+        html, body {
+            height: 100%;
+            position: relative;
+        }
         body::before {
             content: '';
             position: fixed;
@@ -97,7 +101,6 @@
             font-family: "SimSun", "宋体", serif;
             color: #e2e8f0;
             line-height: 1.8;
-            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -105,6 +108,7 @@
             text-align: center;
             position: relative;
             padding: 20px;
+            padding-bottom: 80px;
         }
         .glass {
             background: rgba(0, 0, 0, 0.65);
@@ -146,10 +150,24 @@
             font-family: "SimSun", "宋体", serif;
             border: 1px solid #1e293b;
             transition: 0.3s;
+            text-align: center;
         }
         .time-input:focus {
             border-color: #4299e1;
             background: rgba(30, 41, 59, 0.8);
+        }
+        .sound-switch {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #cbd5e1;
+            font-size: 1rem;
+        }
+        .sound-switch input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
         }
         .btn-group {
             display: flex;
@@ -226,6 +244,7 @@
         .finish-text {
             font-size: 2rem;
             color: #4299e1;
+            margin-bottom: 24px;
         }
         .status-tip {
             margin-top: 2rem;
@@ -233,17 +252,74 @@
             color: #94a3b8;
             z-index: 10;
         }
+        /* 置底 footer */
         footer {
-            margin-top: 3rem;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem 0;
             color: #64748b;
             font-size: 0.9rem;
             z-index: 10;
+            background: rgba(10,12,16,0.8);
         }
+        /* Cookies 悬浮窗口 */
+        .cookie-banner {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 320px;
+            background: rgba(20, 24, 32, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid #2a3546;
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 999;
+            display: none;
+            box-shadow: 0 5px 20 rgba(0,0,0,0.3);
+        }
+        .cookie-title {
+            font-size: 16px;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        .cookie-desc {
+            font-size: 13px;
+            color: #a0aec0;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        .cookie-btns {
+            display: flex;
+            gap: 10px;
+        }
+        .cookie-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .cookie-accept {
+            background: #2b7cd0;
+            color: #fff;
+        }
+        .cookie-reject {
+            background: #2d3748;
+            color: #e2e8f0;
+        }
+
         @media (max-width: 600px) {
             .num-item { font-size: 36px; height: 50px; }
             .roll-viewport { height: 50px; }
             .time-big-card { min-width: 90px; padding: 20px 15px; }
             .center-main { padding: 1.5rem; }
+            .cookie-banner {
+                right: 10px;
+                left: 10px;
+                width: auto;
+            }
         }
     </style>
 </head>
@@ -254,7 +330,13 @@
     <div class="center-main glass" id="centerBox">
         <div class="setting-inner" id="settingPanel">
             <h2 class="setting-title">时间 TIMER</h2>
-            <input type="time" id="timePicker" class="time-input">
+            <input type="time" step="1" id="timePicker" class="time-input">
+            
+            <label class="sound-switch">
+                <input type="checkbox" id="soundEnabled" checked>
+                倒计时结束播放提示音
+            </label>
+
             <div class="btn-group">
                 <button class="md-btn btn-start" id="startBtn">开始旅程</button>
                 <button class="md-btn btn-reset" id="resetBtn">重置</button>
@@ -263,23 +345,105 @@
     </div>
 
     <div class="status-tip" id="statusTip">欢迎回来，旅程要开始了吗？</div>
-
     <footer>2026 椎名绫宫 - Protect, Remove, Reborn.</footer>
+
+    <!-- Cookies 弹窗 -->
+    <div class="cookie-banner" id="cookieBanner">
+        <div class="cookie-title">Cookie 授权</div>
+        <div class="cookie-desc">我们使用 Cookie 记录你的计时数据，授权后可在控制台查看记录。</div>
+        <div class="cookie-btns">
+            <button class="cookie-btn cookie-accept" id="acceptCookie">允许</button>
+            <button class="cookie-btn cookie-reject" id="rejectCookie">拒绝</button>
+        </div>
+    </div>
 
     <script>
         let timer = null;
         let lastVals = { h:-1, m:-1, s:-1 };
+        let currentStartTime = null;
         const centerBox = document.getElementById('centerBox');
         const settingPanel = document.getElementById('settingPanel');
         const timePicker = document.getElementById('timePicker');
         const startBtn = document.getElementById('startBtn');
         const resetBtn = document.getElementById('resetBtn');
         const statusTip = document.getElementById('statusTip');
+        const soundEnabled = document.getElementById('soundEnabled');
+        const endSound = new Audio('https://teak75035.github.io/timer_utilitarian_v2.mp3');
 
+        // ==============================================
+        // Cookies 授权逻辑
+        // ==============================================
+        const cookieBanner = document.getElementById('cookieBanner');
+        const acceptCookie = document.getElementById('acceptCookie');
+        const rejectCookie = document.getElementById('rejectCookie');
+
+        // 读取 Cookie
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+        // 设置 Cookie 365天
+        function setCookie(name, value) {
+            document.cookie = `${name}=${value}; max-age=${365*24*60*60}; path=/`;
+        }
+
+        // 初始化弹窗
+        function initCookieBanner() {
+            const hasConsent = getCookie('cookie_consent');
+            if (!hasConsent) {
+                cookieBanner.style.display = 'block';
+            }
+        }
+
+        // 允许
+        acceptCookie.addEventListener('click', () => {
+            setCookie('cookie_consent', 'accepted');
+            cookieBanner.style.display = 'none';
+        });
+        // 拒绝
+        rejectCookie.addEventListener('click', () => {
+            setCookie('cookie_consent', 'rejected');
+            cookieBanner.style.display = 'none';
+        });
+
+        // ==============================================
+        // 计时记录存储（仅允许 Cookies 时生效）
+        // ==============================================
+        function saveTimeRecord(start, end) {
+            if (getCookie('cookie_consent') !== 'accepted') return;
+            let records = JSON.parse(localStorage.getItem('time_records') || '[]');
+            records.push({
+                startTime: start,
+                endTime: end,
+                timestamp: new Date().toLocaleString()
+            });
+            localStorage.setItem('time_records', JSON.stringify(records));
+        }
+
+        // 控制台输出：输入 view() 查看
+        window.view = function() {
+            if (getCookie('cookie_consent') !== 'accepted') {
+                console.log('❌ 未授权 Cookie，无法查看记录');
+                return;
+            }
+            const records = JSON.parse(localStorage.getItem('time_records') || '[]');
+            if (records.length === 0) {
+                console.log('📝 暂无计时记录');
+                return;
+            }
+            console.log('📋 全部计时记录：');
+            console.table(records);
+        }
+
+        // ==============================================
+        // 原有计时逻辑
+        // ==============================================
         const now = new Date();
         const curH = String(now.getHours()).padStart(2,'0');
         const curM = String(now.getMinutes()).padStart(2,'0');
-        timePicker.min = `${curH}:${curM}`;
+        const curS = String(now.getSeconds()).padStart(2,'0');
+        timePicker.min = `${curH}:${curM}:${curS}`;
 
         function initCountDOM(){
             centerBox.innerHTML = `
@@ -301,39 +465,70 @@
             lastVals = { h:-1, m:-1, s:-1 };
         }
 
-        function rollUpdate(rollId, newVal){
+        function rollUpdate(rollId, oldVal, newVal){
             const wrap = document.getElementById(rollId);
             const itemHeight = wrap.querySelector('.num-item').offsetHeight;
+            wrap.style.transition = 'none';
+            
             const newDom = document.createElement('div');
             newDom.className = 'num-item';
             newDom.textContent = newVal;
-            wrap.appendChild(newDom);
-            wrap.style.transform = `translateY(-${itemHeight}px)`;
-            setTimeout(()=>{
-                wrap.style.transition = 'none';
-                wrap.style.transform = 'translateY(0)';
-                wrap.firstElementChild.remove();
-                setTimeout(()=>{ wrap.style.transition = ''; },20);
-            }, 500);
+
+            if (newVal < oldVal) {
+                wrap.appendChild(newDom);
+                setTimeout(() => {
+                    wrap.style.transition = 'transform 0.5s cubic-bezier(0.22, 0.1, 0.25, 1.05)';
+                    wrap.style.transform = `translateY(-${itemHeight}px)`;
+                    setTimeout(()=>{
+                        wrap.style.transition = 'none';
+                        wrap.style.transform = 'translateY(0)';
+                        wrap.firstElementChild.remove();
+                    }, 500);
+                }, 20);
+            } else {
+                wrap.insertBefore(newDom, wrap.firstChild);
+                wrap.style.transform = `translateY(-${itemHeight}px)`;
+                setTimeout(() => {
+                    wrap.style.transition = 'transform 0.5s cubic-bezier(0.22, 0.1, 0.25, 1.05)';
+                    wrap.style.transform = 'translateY(0)';
+                    setTimeout(()=>{
+                        wrap.style.transition = 'none';
+                        wrap.lastElementChild.remove();
+                    }, 500);
+                }, 20);
+            }
         }
 
         function updateCount(target){
             const diff = target - Date.now();
             if (diff <= 0) {
                 clearInterval(timer);
-                centerBox.innerHTML = `<div class="finish-text">旅程告一段落</div>`;
+                centerBox.innerHTML = `
+                    <div class="finish-text">旅程告一段落</div>
+                    <button class="md-btn btn-reset" onclick="location.reload()">重新开始</button>
+                `;
                 statusTip.textContent = '时间已到，新的开始。';
+                
+                // 保存结束时间
+                saveTimeRecord(currentStartTime, new Date().toLocaleString());
+                currentStartTime = null;
+
+                if(soundEnabled.checked){
+                    endSound.play().catch(err=>console.log('音频播放失败'));
+                }
                 return;
             }
             const h = Math.floor(diff / 3600000);
             const m = Math.floor((diff % 3600000) / 60000);
             const s = Math.floor((diff % 60000) / 1000);
+            
             const hTxt = String(h).padStart(2,'0');
             const mTxt = String(m).padStart(2,'0');
             const sTxt = String(s).padStart(2,'0');
-            if(lastVals.h !== h) { rollUpdate('hRoll', hTxt); lastVals.h = h; }
-            if(lastVals.m !== m) { rollUpdate('mRoll', mTxt); lastVals.m = m; }
-            if(lastVals.s !== s) { rollUpdate('sRoll', sTxt); lastVals.s = s; }
+            
+            if(lastVals.h !== hTxt) { rollUpdate('hRoll', lastVals.h, hTxt); lastVals.h = hTxt; }
+            if(lastVals.m !== mTxt) { rollUpdate('mRoll', lastVals.m, mTxt); lastVals.m = mTxt; }
+            if(lastVals.s !== sTxt) { rollUpdate('sRoll', lastVals.s, sTxt); lastVals.s = sTxt; }
         }
 
         startBtn.addEventListener('click', () => {
@@ -342,13 +537,28 @@
                 statusTip.textContent = '请先选择目标时间';
                 return;
             }
-            const [selH, selM] = val.split(':');
+
+            // ========== 彩蛋：11:45:14 跳转 ==========
+            if(val === "11:45:14"){
+                window.open("https://114514.cn", "_blank");
+                statusTip.textContent = "发现了隐藏的旅程！";
+                return;
+            }
+
+            const parts = val.split(':');
+            const selH = +parts[0];
+            const selM = +parts[1];
+            const selS = parts[2] ? +parts[2] : 0;
+
             const target = new Date();
-            target.setHours(+selH, +selM, 0, 0);
+            target.setHours(selH, selM, selS, 0);
             if (target <= new Date()) {
                 statusTip.textContent = '无法前往过去，请选择未来时间';
                 return;
             }
+            // 记录开始时间
+            currentStartTime = new Date().toLocaleString();
+            
             statusTip.textContent = '时间逐渐消逝，未来正在向你靠近。';
             initCountDOM();
             if (timer) clearInterval(timer);
@@ -360,26 +570,19 @@
             if (timer) clearInterval(timer);
             timer = null;
             timePicker.value = '';
+            currentStartTime = null;
             statusTip.textContent = '欢迎回来，旅程即将开始。';
             centerBox.innerHTML = settingPanel.outerHTML;
         });
 
+        // 雨滴（注释保留）
         const rainContainer = document.getElementById('rain');
-        function createRain() {
-            /*
-            const rainDrop = document.createElement('div');
-            rainDrop.classList.add('rain');
-            const left = Math.random() * 100;
-            const duration = Math.random() * 1.8 + 1.2;
-            const height = Math.random() * 70 + 50;
-            rainDrop.style.left = left + '%';
-            rainDrop.style.height = height + 'px';
-            rainDrop.style.animationDuration = duration + 's';
-            rainContainer.appendChild(rainDrop);
-            setTimeout(() => rainDrop.remove(), duration * 1000);
-            */
-        }
-        /*setInterval(createRain, 120);*/
+        function createRain() {}
+
+        // 启动
+        window.addEventListener('load', () => {
+            initCookieBanner();
+        });
     </script>
 </body>
 </html>
