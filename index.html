@@ -21,15 +21,59 @@
       --cursor-outer-size: 24px;
       --cursor-inner-size: 8px;
       --cursor-shadow: 0 0 8px rgba(66, 153, 225, 0.8);
-      --glow-color: rgba(102, 204, 255, 0.4);
       --primary: #66ccff;
+      --primary-rgb: 102, 204, 255;
+
+      --bg-gradient: radial-gradient(circle at 20% 20%, #1e293b, #020617);
+      --text-color: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --card-bg: rgba(15, 23, 42, 0.65);
+      --border-color: rgba(102, 204, 255, 0.2);
+      --glow: 0 0 20px rgba(102, 204, 255, 0.25);
+      --hover-transform: translateY(-3px);
+      --transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .light {
+      --primary: #ff8da1;
+      --primary-rgb: 255, 141, 161;
+      --cursor-shadow: 0 0 8px rgba(255, 182, 193, 0.8);
+      --bg-gradient: radial-gradient(circle at 80% 0%, #ffe4e6, #f8fafc);
+      --text-color: #0f172a;
+      --text-secondary: #334155;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --border-color: rgba(0, 0, 0, 0.09);
+      --glow: 0 8px 24px rgba(255, 182, 193, 0.25);
+      --hover-transform: translateY(-2px) scale(1.01);
     }
 
     * {
+      transition: var(--transition);
       cursor: none !important;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    /* 光标：最高层级 9999 */
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-color);
+      line-height: 1.7;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    #rainCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.35;
+    }
+
     .custom-cursor {
       position: fixed;
       width: var(--cursor-outer-size);
@@ -37,7 +81,7 @@
       background: rgba(255, 255, 255, 0.5);
       border-radius: 50%;
       pointer-events: none;
-      z-index: 9999; /* 最高 */
+      z-index: 9999;
       transform: translate(-50%, -50%);
       box-shadow: var(--cursor-shadow);
       transition: none !important;
@@ -55,18 +99,10 @@
       box-shadow: var(--cursor-shadow);
     }
 
-    /* 带框元素发光悬浮 */
-    .hover-glow {
-      box-shadow: 0 0 12px var(--glow-color), inset 0 0 4px rgba(102, 204, 255, 0.2);
-      transform: translateY(-2px);
-      border-color: rgba(102, 204, 255, 0.3);
-    }
-
-    /* 文字链接动画 */
+    /* 移除原有link-underline的重叠文字效果，保留导航栏的下划线（如果需要） */
     .link-underline {
       position: relative;
       color: inherit;
-      transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       overflow: hidden;
     }
     .link-underline::before {
@@ -97,7 +133,28 @@
       width: 100%;
     }
 
-    /* 🔥 向下滑动提示箭头 · 非线性柔和动画 */
+    /* 新增跳转文字箭头效果 */
+    .jump-text {
+      position: relative;
+      transition: 0.3s;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 0.875rem; /* 保持原文字大小 */
+    }
+
+    .jump-text::after {
+      content: " ➤";
+      opacity: 0;
+      margin-left: 4px;
+      transition: 0.3s;
+      color: var(--primary);
+    }
+
+    .jump-text:hover::after {
+      opacity: 1;
+      margin-left: 8px;
+    }
+
     .scroll-indicator {
       position: absolute;
       bottom: 2rem;
@@ -111,7 +168,6 @@
       100% { opacity: 1; transform: translateX(-50%) translateY(12px); }
     }
 
-    /* 🔥 完美无缝滚动 + z-index 层级修复（最底层） */
     .scroll-text-container {
       position: absolute;
       bottom: 0;
@@ -120,7 +176,7 @@
       height: calc(100vh / 3);
       overflow: hidden;
       pointer-events: none;
-      z-index: -1; /* 🔥 修复：放在最底层 */
+      z-index: -1;
     }
     .scroll-wrap {
       display: flex;
@@ -133,7 +189,7 @@
     .scroll-text {
       font-size: clamp(8rem, 20vw, 15rem);
       font-weight: bold;
-      color: white;
+      color: var(--text-color);
       opacity: 0.1;
       white-space: nowrap;
       padding-right: 2rem;
@@ -143,7 +199,6 @@
       100% { transform: translateY(-50%) translateX(-50%); }
     }
 
-    /* 返回顶部按钮样式 */
     .back-to-top {
       position: fixed;
       bottom: 2rem;
@@ -151,8 +206,8 @@
       width: 3rem;
       height: 3rem;
       border-radius: 50%;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(102, 204, 255, 0.3);
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
       color: var(--primary);
       display: flex;
       align-items: center;
@@ -161,21 +216,131 @@
       z-index: 9998;
       opacity: 0;
       visibility: hidden;
-      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-      box-shadow: 0 0 8px rgba(66, 153, 225, 0.4);
+      box-shadow: var(--glow);
     }
-
     .back-to-top.visible {
       opacity: 1;
       visibility: visible;
       transform: translateY(0);
     }
-
     .back-to-top:hover {
-      background: rgba(15, 23, 42, 0.9);
-      box-shadow: 0 0 12px var(--glow-color);
-      transform: translateY(-2px);
+      transform: var(--hover-transform);
+      box-shadow: var(--glow);
     }
+
+    .language-selector {
+      position: relative;
+      z-index: 60;
+    }
+    .language-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-color);
+      cursor: pointer;
+    }
+    .language-btn:hover {
+      transform: var(--hover-transform);
+      box-shadow: var(--glow);
+    }
+    .language-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 0.5rem;
+      width: 160px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: var(--glow);
+      overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      z-index: 70;
+    }
+    .language-dropdown.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .language-option {
+      padding: 10px 14px;
+      color: var(--text-color);
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .language-option:hover {
+      background: rgba(var(--primary-rgb), 0.1);
+    }
+    .language-option.active-lang {
+      background: rgba(var(--primary-rgb), 0.2);
+      font-weight: 500;
+    }
+
+    .theme-toggle {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-color);
+      cursor: pointer;
+      z-index: 60;
+    }
+    .theme-toggle:hover {
+      transform: var(--hover-transform);
+      box-shadow: var(--glow);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(16px);
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: var(--transition);
+    }
+    .card:hover {
+      transform: var(--hover-transform);
+      box-shadow: var(--glow);
+    }
+
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 50;
+      background: var(--card-bg);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-color);
+      transition: var(--transition);
+    }
+
+    .glow-box {
+      transition: var(--transition);
+      border: 1px solid var(--border-color);
+    }
+    .glow-box:hover {
+      transform: var(--hover-transform);
+      box-shadow: var(--glow);
+    }
+
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scroll-width: none; }
+    .scroll-mt-24 { scroll-margin-top: 6rem; }
+
+    .text-main { color: var(--text-color) !important; }
+    .text-secondary { color: var(--text-secondary) !important; }
   </style>
 
   <script>
@@ -183,9 +348,9 @@
       theme: {
         extend: {
           colors: {
-            primary: '#66ccff',
+            primary: 'var(--primary)',
             dark: '#0f172a',
-            glass: 'rgba(15, 23, 42, 0.7)',
+            glass: 'var(--card-bg)',
           },
           fontFamily: {
             sans: ['CustomFont', 'system-ui', 'sans-serif'],
@@ -194,64 +359,56 @@
       }
     }
   </script>
-
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .scrollbar-hide::-webkit-scrollbar { display: none; }
-      .scrollbar-hide { -ms-overflow-style: none; scroll-width: none; }
-      .scroll-mt-24 { scroll-margin-top: 6rem; }
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background-color: #0f172a;
-      color: #f1f5f9;
-      line-height: 1.7;
-      overflow-x: hidden;
-      scroll-behavior: smooth; /* 全局平滑滚动 */
-    }
-    .card {
-      @apply bg-glass backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-white/10 shadow-xl mb-6;
-    }
-    .glow-box {
-      transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
-    }
-  </style>
 </head>
 
 <body class="scrollbar-hide">
+  <canvas id="rainCanvas"></canvas>
   <div class="custom-cursor"></div>
 
-  <!-- 导航 z-index: 50 -->
-  <nav class="fixed top-0 w-full z-50 bg-glass backdrop-blur-xl border-b border-white/10">
+  <nav>
     <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-3">
-      <a href="#" data-text="" class="link-underline text-xl font-semibold text-white flex items-center gap-2">
-        <i class="fa fa-star text-primary"></i> 椎名绫宫 · REALITY
+      <a href="#" data-text=" " class="link-underline text-xl font-semibold flex items-center gap-2">
+        <i class="fa fa-star text-primary"></i> <span data-lang="nav_title">椎名绫宫 · REALITY</span>
       </a>
-      <div class="flex gap-5 text-sm md:text-base">
-        <a href="#about" data-text="关于我" class="link-underline">关于我</a>
-        <a href="#projects" data-text="项目" class="link-underline">项目</a>
-        <a href="#contact" data-text="联系" class="link-underline">联系</a>
-        <a href="#notice" data-text="须知" class="link-underline">须知</a>
+      <div class="flex gap-5 text-sm md:text-base items-center">
+        <a href="#about" data-text="   " class="link-underline" data-lang="nav_about">关于我</a>
+        <a href="#projects" data-text="   " class="link-underline" data-lang="nav_projects">项目</a>
+        <a href="#contact" data-text="   " class="link-underline" data-lang="nav_contact">联系</a>
+        <a href="#notice" data-text="   " class="link-underline" data-lang="nav_notice">须知</a>
+        
+        <div class="theme-toggle" id="themeToggle">
+          <i class="fa fa-moon-o text-primary text-lg"></i>
+        </div>
+        
+        <div class="language-selector">
+          <div class="language-btn" id="languageBtn">
+            <i class="fa fa-globe text-primary text-lg"></i>
+          </div>
+          <div class="language-dropdown" id="languageDropdown">
+            <div class="language-option active-lang" data-code="zh-CN">简体中文</div>
+            <div class="language-option" data-code="zh-TW">正體中文</div>
+            <div class="language-option" data-code="zh-MIAO">喵体中文</div>
+            <div class="language-option" data-code="en-US">English</div>
+            <div class="language-option" data-code="ja-JP">日本語</div>
+          </div>
+        </div>
       </div>
     </div>
   </nav>
 
-  <!-- Hero 内容 z-index: 10 确保在文字上方 -->
   <section id="hero" class="min-h-screen flex flex-col justify-center items-center px-4 text-center relative">
-    <div class="max-w-2xl px-4 z-10"> <!-- 🔥 内容层级高于滚动文字 -->
-      <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-white mb-5 tracking-wide">请，重新认识我。</h1>
-      <p class="text-lg md:text-xl text-white/95 mb-3 tracking-wide font-medium">Welcome to REALITY.</p>
-      <p class="text-white/90 mb-2">相识真是一件很困难的事情......</p>
-      <p class="text-white/90 mb-2">但我相信你，追寻者。</p>
-      <p class="mt-6 text-white/95 font-medium">椎名绫宫，很高兴认识你。</p>
+    <div class="max-w-2xl px-4 z-10">
+      <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold mb-5 tracking-wide" data-lang="hero_title">请，重新认识我。</h1>
+      <p class="text-lg md:text-xl text-main mb-3 tracking-wide font-medium">Welcome to REALITY.</p>
+      <p class="text-main mb-2" data-lang="hero_text1">相识真是一件很困难的事情......</p>
+      <p class="text-main mb-2" data-lang="hero_text2">但我相信你，追寻者。</p>
+      <p class="mt-6 text-main font-medium" data-lang="hero_name">椎名绫宫，很高兴认识你。</p>
     </div>
 
-    <!-- 🔥 向下滑动提示箭头（已加） -->
     <div class="scroll-indicator">
       <i class="fa fa-angle-down text-3xl text-primary/80"></i>
     </div>
     
-    <!-- 滚动文字（底层） -->
     <div class="scroll-text-container">
       <div class="scroll-wrap">
         <span class="scroll-text">WELCOME TO REALITY # </span>
@@ -262,31 +419,30 @@
     </div>
   </section>
 
-  <!-- 主内容 -->
   <main class="max-w-6xl mx-auto px-4 pb-20 relative z-10">
     <div class="flex flex-col lg:flex-row gap-6">
       <div class="lg:w-[280px] w-full flex-shrink-0">
         <div class="card">
-          <h2 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-            <i class="fa fa-comment text-primary"></i> 个人留言
+          <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+            <i class="fa fa-comment text-primary"></i> <span data-lang="sidebar_message">个人留言</span>
           </h2>
-          <p class="text-gray-300 text-sm whitespace-pre-line">欢迎来到我的小站~存在于互联网末端的避难所，设计很简陋...不过相遇就是缘分啦 :)</p>
+          <p class="text-secondary text-sm whitespace-pre-line" data-lang="sidebar_message_text">欢迎来到我的小站~<br>存在于互联网末端的避难所，设计很简陋...<br>不过相遇就是缘分啦 :)</p>
         </div>
         <div class="card">
-          <h2 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-            <i class="fa fa-quote-left text-primary"></i> 只言片语
+          <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+            <i class="fa fa-quote-left text-primary"></i> <span data-lang="sidebar_words">只言片语</span>
           </h2>
           <div id="hitokoto" class="flex flex-col gap-2">
             <div class="flex items-start gap-2">
               <i class="fa fa-quote-left text-primary mt-1"></i>
-              <p id="hitokoto-text" class="text-sm text-gray-300">加载中...</p>
+              <p id="hitokoto-text" class="text-sm text-secondary">加载中...</p>
             </div>
-            <p id="hitokoto-from" class="text-right text-xs text-gray-400/70"></p>
+            <p id="hitokoto-from" class="text-right text-xs text-secondary/70"></p>
           </div>
         </div>
         <div class="card">
-          <h2 class="text-xl font-semibold text-white mb-5 flex items-center gap-2">
-            <i class="fa fa-link text-primary"></i> 友情链接
+          <h2 class="text-xl font-semibold mb-5 flex items-center gap-2">
+            <i class="fa fa-link text-primary"></i> <span data-lang="sidebar_links">友情链接</span>
           </h2>
           <div class="flex flex-col gap-3">
             <a href="https://www.haitang000.cn" target="_blank" class="px-3 py-2 bg-white/10 rounded-lg text-sm hover:bg-white/15 transition-all glow-box" title="海棠的个人网站">haitang000</a>
@@ -296,212 +452,454 @@
 
       <div class="flex-1">
         <section id="about" class="card scroll-mt-24">
-          <h2 class="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
-            <i class="fa fa-user-circle text-primary"></i> 我是谁 · Self Definition
+          <h2 class="text-2xl font-semibold mb-6 flex items-center gap-2">
+            <i class="fa fa-user-circle text-primary"></i> <span data-lang="about_title">我是谁 · Self Definition</span>
           </h2>
-          <p class="text-gray-300 mb-6">涉猎广而不精的迷茫者，INFP-T。</p>
+          <p class="text-secondary mb-6" data-lang="about_desc">涉猎广而不精的迷茫者，INFP-T。</p>
           <div class="flex flex-wrap justify-center gap-2 mb-8">
-            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" title="包含小说、散文、诗歌等形式的文字创作与表达">文字创作</span>
-            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" title="使用Python语言进行后端接口、服务开发">Python/后端开发</span>
-            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" title="VOCALOID虚拟歌手相关的音乐创作与制作">Vocaloid</span>
-            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" title="手绘、板绘等形式的美术创作">绘画</span>
-            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" title="互动式文字冒险类视觉小说制作">视觉小说</span>
-            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" title="Android系统使用与Linux系统运维开发">Android/Linux</span>
-            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" title="用户界面设计，包含网页、APP等视觉设计">UI设计</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" data-lang="tag_writing">文字创作</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" data-lang="tag_python">Python/后端开发</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" data-lang="tag_vocaloid">Vocaloid</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" data-lang="tag_painting">绘画</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" data-lang="tag_vn">视觉小说</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" data-lang="tag_os">Android/Linux</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" data-lang="tag_ui">UI设计</span>
           </div>
           <div class="flex flex-wrap justify-center gap-2 mb-6">
-            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" title="初音未来：缤纷舞台 音乐节奏类手游">初音未来：缤纷舞台</span>
-            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" title="物华弥新 文物拟人策略卡牌手游">物华弥新</span>
-            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" title="重返未来：1999 二次元卡牌策略手游">重返未来：1999</span>
-            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" title="Phira 开源音乐节奏游戏">Phira</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" data-lang="game_pjsk">初音未来：缤纷舞台</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" data-lang="game_wemx">物华弥新</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" data-lang="game_1999">重返未来：1999</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" data-lang="game_phira">Phira</span>
           </div>
-          <p class="text-gray-400 italic text-center">共鸣的旋律并不总是存在，所以......请珍惜吧。</p>
+          <p class="text-secondary italic text-center" data-lang="about_quote">共鸣的旋律并不总是存在，所以......请珍惜吧。</p>
         </section>
 
         <section id="projects" class="card scroll-mt-24">
-          <h2 class="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
-            <i class="fa fa-cubes text-primary"></i> 我的项目 · Projects for Everyone
+          <h2 class="text-2xl font-semibold mb-6 flex items-center gap-2">
+            <i class="fa fa-cubes text-primary"></i> <span data-lang="projects_title">我的项目 · Projects for Everyone</span>
           </h2>
-          <!-- 🔥 修复：sm:grid-cols-2 加了横杠，双列正常 -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div class="bg-white/10 p-5 rounded-xl border border-white/10 hover:border-primary/40 transition-all glow-box">
-              <h3 class="font-medium text-lg mb-2 flex items-center gap-2 text-white">
-                <i class="fa fa-book text-primary"></i> 残翼
+              <h3 class="font-medium text-lg mb-2 flex items-center gap-2">
+                <i class="fa fa-book text-primary"></i> <span data-lang="proj_brokenwings">残翼</span>
               </h3>
               <div class="flex gap-2 mb-3">
-                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" title="互动式文字冒险游戏类型">视觉小说</span>
-                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" title="Ren'Py 视觉小说制作引擎">Ren'Py</span>
-                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" title="项目正在持续开发制作中">进行中</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" data-lang="proj_tag_vn">视觉小说</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs">Ren'Py</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" data-lang="proj_status_ongoing">进行中</span>
               </div>
-              <p class="text-gray-400 text-sm mb-4">平行线总在无穷远处相交，对吧？</p>
-              <a href="https://teak75035.github.io/broken-wings" target="_blank" data-text="　　　　" class="link-underline text-primary text-sm" title="访问残翼视觉小说项目主页">项目主页</a>
+              <p class="text-secondary text-sm mb-4" data-lang="proj_brokenwings_desc">平行线总在无穷远处相交，对吧？</p>
+              <!-- 修改为jump-text类，移除原有link-underline -->
+              <a href="https://teak75035.github.io/broken-wings" target="_blank" class="jump-text" data-lang="proj_website">项目主页</a>
             </div>
             <div class="bg-white/10 p-5 rounded-xl border border-white/10 hover:border-primary/40 transition-all glow-box">
-              <h3 class="font-medium text-lg mb-2 flex items-center gap-2 text-white">
-                <i class="fa fa-clock-o text-primary"></i> 时间 TIMER
+              <h3 class="font-medium text-lg mb-2 flex items-center gap-2">
+                <i class="fa fa-clock-o text-primary"></i> <span data-lang="proj_timer">时间 TIMER</span>
               </h3>
               <div class="flex gap-2 mb-3">
-                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" title="日常使用的功能性工具类项目">实用工具</span>
-                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" title="使用HTML/CSS/JS开发的网页应用">HTML</span>
-                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" title="项目已上线可正常访问使用">在线中</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" data-lang="proj_tag_tool">实用工具</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs">HTML</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" data-lang="proj_status_online">在线中</span>
               </div>
-              <p class="text-gray-400 text-sm mb-4">以指定时间为终点的简约倒计时工具。</p>
-              <a href="https://teak75035.github.io/timer" target="_blank" data-text="　　　　" class="link-underline text-primary text-sm" title="打开时间TIMER在线工具">在线使用</a>
+              <p class="text-secondary text-sm mb-4" data-lang="proj_timer_desc">以指定时间为终点的简约倒计时工具。</p>
+              <!-- 修改为jump-text类 -->
+              <a href="https://teak75035.github.io/timer" target="_blank" class="jump-text" data-lang="proj_useonline">在线使用</a>
             </div>
             <div class="bg-white/10 p-5 rounded-xl border border-white/10 hover:border-primary/40 transition-all glow-box">
-              <h3 class="font-medium text-lg mb-2 flex items-center gap-2 text-white">
+              <h3 class="font-medium text-lg mb-2 flex items-center gap-2">
                 <i class="fa fa-desktop text-primary"></i> PanelHUD
               </h3>
               <div class="flex gap-2 mb-3">
-                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" title="适用于GNOME桌面环境的扩展程序">GNOME 拓展</span>
-                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" title="使用JavaScript和Python开发">JS/Python</span>
-                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" title="项目处于维护更新状态">维护中</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" data-lang="proj_tag_gnome">GNOME 拓展</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs">JS/Python</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" data-lang="proj_status_maintain">维护中</span>
               </div>
-              <p class="text-gray-400 text-sm mb-4">在面板上显示文字并通过接口控制。</p>
-              <a href="https://github.com/Teak75035/panelhud-gnome-extension" target="_blank" data-text="　　　　" class="link-underline text-primary text-sm" title="访问PanelHUD项目代码仓库">项目仓库</a>
+              <p class="text-secondary text-sm mb-4" data-lang="proj_panelhud_desc">在面板上显示文字并通过接口控制。</p>
+              <!-- 修改为jump-text类 -->
+              <a href="https://github.com/Teak75035/panelhud-gnome-extension" target="_blank" class="jump-text" data-lang="proj_repo">项目仓库</a>
             </div>
             <div class="bg-white/10 p-5 rounded-xl border border-white/10 hover:border-primary/40 transition-all glow-box">
-              <h3 class="font-medium text-lg mb-2 flex items-center gap-2 text-white">
+              <h3 class="font-medium text-lg mb-2 flex items-center gap-2">
                 <i class="fa fa-wrench text-primary"></i> Oxygen 3
               </h3>
               <div class="flex gap-2 mb-3">
-                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" title="面向教学场景的工具集合">实用工具</span>
-                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" title="基于Python语言开发的工具集">Python</span>
-                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" title="项目正在重构优化中">重构中</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" data-lang="proj_tag_tool">实用工具</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs">Python</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs" data-lang="proj_status_refactor">重构中</span>
               </div>
-              <p class="text-gray-400 text-sm mb-4">适用于教学环境的工具集及其附加组件。</p>
-              <a href="#" data-text="　　　　" class="link-underline text-primary text-sm" title="该项目目前暂时不对外开放访问">暂停开放</a>
+              <p class="text-secondary text-sm mb-4" data-lang="proj_oxygen_desc">适用于教学环境的工具集及其附加组件。</p>
+              <!-- 修改为jump-text类 -->
+              <a href="#" class="jump-text" data-lang="proj_closed">暂停开放</a>
             </div>
           </div>
         </section>
 
         <section id="contact" class="card scroll-mt-24">
-          <h2 class="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
-            <i class="fa fa-paper-plane text-primary"></i> 找到我 · Connect to Reality
+          <h2 class="text-2xl font-semibold mb-6 flex items-center gap-2">
+            <i class="fa fa-paper-plane text-primary"></i> <span data-lang="contact_title">找到我 · Connect to Reality</span>
           </h2>
           <div class="flex flex-wrap justify-center gap-3">
-            <a href="https://github.com/Teak75035/" target="_blank" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box" title="访问我的GitHub代码仓库">
+            <a href="https://github.com/Teak75035/" target="_blank" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box">
               <i class="fa fa-github text-primary"></i> Github
             </a>
-            <a href="mailto:musicteak100@gmail.com" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box" title="发送邮件至musicteak100@gmail.com">
+            <a href="mailto:musicteak100@gmail.com" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box">
               <i class="fa fa-envelope text-primary"></i> Email
             </a>
-            <a href="https://t.me/lingxianww" target="_blank" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box" title="访问我的Telegram账号">
+            <a href="https://t.me/lingxianww" target="_blank" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box">
               <i class="fa fa-telegram text-primary"></i> Telegram
             </a>
-            <a href="https://space.bilibili.com/660590377" target="_blank" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box" title="访问我的哔哩哔哩空间">
+            <a href="https://space.bilibili.com/660590377" target="_blank" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box">
               <i class="fa fa-play-circle text-primary"></i> Bilibili
             </a>
-            <a href="https://teaaaak.lofter.com/" target="_blank" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box" title="访问我的LOFTER乐乎主页">
+            <a href="https://teaaaak.lofter.com/" target="_blank" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box">
               <i class="fa fa-bookmark text-primary"></i> LOFTER
             </a>
-            <a href="tencent://AddContact/?uin=210308731" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box" title="添加QQ好友：210308731">
-              <i class="fa fa-qq text-primary"></i> QQ: 210308731
+            <a href="tencent://AddContact/?uin=210308731" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box">
+              <i class="fa fa-qq text-primary"></i> <span data-lang="contact_qq">QQ: 210308731</span>
             </a>
           </div>
         </section>
 
         <section id="notice" class="card scroll-mt-24">
-          <h2 class="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
-            <i class="fa fa-exclamation-circle text-primary"></i> 请你知悉 · Before You Act
+          <h2 class="text-2xl font-semibold mb-6 flex items-center gap-2">
+            <i class="fa fa-exclamation-circle text-primary"></i> <span data-lang="notice_title">请你知悉 · Before You Act</span>
           </h2>
           <div class="max-w-xl mx-auto text-center">
-            <p class="text-gray-300 mb-4">在开始前，我希望你能尊重每个人的个人意愿。</p>
-            <p class="text-gray-300 mb-4">请不要提及/讨论以下内容：</p>
+            <p class="text-secondary mb-4" data-lang="notice_text1">在开始前，我希望你能尊重每个人的个人意愿。</p>
+            <p class="text-secondary mb-4" data-lang="notice_text2">请不要提及/讨论以下内容：</p>
             <div class="flex flex-wrap justify-center gap-2 mb-6">
-              <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" title="请勿讨论福瑞/兽人相关内容">福瑞/兽圈</span>
-              <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" title="请勿讨论男同性恋相关话题">男同性恋</span>
-              <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" title="请勿讨论米哈游相关游戏及内容">米哈游</span>
-              <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" title="请勿讨论任何政治立场相关话题">政治立场</span>
-              <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" title="严禁讨论未成年人色情相关内容">未成年人色情</span>
+              <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" data-lang="notice_tag_furry">福瑞/兽圈</span>
+              <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" data-lang="notice_tag_gay">男同性恋</span>
+              <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" data-lang="notice_tag_mihoyo">米哈游</span>
+              <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" data-lang="notice_tag_politics">政治立场</span>
+              <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box" data-lang="notice_tag_cp">未成年人色情</span>
             </div>
-            <p class="text-gray-400 italic">迷茫者会感谢你的尊重。</p>
+            <p class="text-secondary italic" data-lang="notice_quote">迷茫者会感谢你的尊重。</p>
           </div>
         </section>
       </div>
     </div>
   </main>
 
-  <footer class="py-8 text-center text-gray-500 text-sm border-t border-white/10 relative z-10">
-    <p>愿星辰与你同在。</p>
-    <p class="mt-2">椎名绫宫 © 2026 All Rights Reserved</p>
+  <footer class="py-8 text-center text-secondary text-sm border-t border-white/10 relative z-10">
+    <p data-lang="footer_text1">愿星辰与你同在。</p>
+    <p class="mt-2" data-lang="footer_copyright">椎名绫宫 © 2026 All Rights Reserved</p>
   </footer>
 
-  <!-- 返回顶部按钮 -->
-  <div class="back-to-top" id="backToTop" title="返回页面顶部">
+  <div class="back-to-top" id="backToTop">
     <i class="fa fa-angle-up text-xl"></i>
   </div>
 
   <script>
-    // 一言
-    async function loadHitokoto() {
-      try {
-        const res = await fetch('https://v1.hitokoto.cn');
-        const data = await res.json();
-        document.getElementById('hitokoto-text').textContent = data.hitokoto;
-        let fromText = data.from_who ? `${data.from_who} · ${data.from}` : data.from;
-        document.getElementById('hitokoto-from').textContent = fromText;
-      } catch (e) {
-        document.getElementById('hitokoto-text').textContent = '加载失败';
+    const translations = {
+      'zh-CN': {
+        nav_title: '椎名绫宫 · REALITY', nav_about: '关于我', nav_projects: '项目', nav_contact: '联系', nav_notice: '须知',
+        hero_title: '请，重新认识我。', hero_text1: '相识真是一件很困难的事情......', hero_text2: '但我相信你，追寻者。', hero_name: '椎名绫宫，很高兴认识你。',
+        sidebar_message: '个人留言', sidebar_message_text: '欢迎来到我的小站~\n存在于互联网末端的避难所，设计很简陋...\n不过相遇就是缘分啦 :)', sidebar_words: '只言片语', sidebar_links: '友情链接',
+        about_title: '我是谁 · Self Definition', about_desc: '涉猎广而不精的迷茫者，INFP-T。',
+        tag_writing: '文字创作', tag_python: 'Python/后端开发', tag_vocaloid: 'Vocaloid', tag_painting: '绘画', tag_vn: '视觉小说', tag_os: 'Android/Linux', tag_ui: 'UI设计',
+        game_pjsk: '初音未来：缤纷舞台', game_wemx: '物华弥新', game_1999: '重返未来：1999', game_phira: 'Phira',
+        about_quote: '共鸣的旋律并不总是存在，所以......请珍惜吧。',
+        projects_title: '我的项目 · Projects for Everyone', proj_brokenwings: '残翼', proj_tag_vn: '视觉小说', proj_status_ongoing: '进行中', proj_brokenwings_desc: '平行线总在无穷远处相交，对吧？', proj_website: '项目主页',
+        proj_timer: '时间 TIMER', proj_tag_tool: '实用工具', proj_status_online: '在线中', proj_timer_desc: '以指定时间为终点的简约倒计时工具。', proj_useonline: '在线使用',
+        proj_tag_gnome: 'GNOME 拓展', proj_status_maintain: '维护中', proj_panelhud_desc: '在面板上显示文字并通过接口控制。', proj_repo: '项目仓库',
+        proj_status_refactor: '重构中', proj_oxygen_desc: '适用于教学环境的工具集及其附加组件。', proj_closed: '暂停开放',
+        contact_title: '找到我 · Connect to Reality', contact_qq: 'QQ: 210308731',
+        notice_title: '请你知悉 · Before You Act', notice_text1: '在开始前，我希望你能尊重每个人的个人意愿。', notice_text2: '请不要提及/讨论以下内容：',
+        notice_tag_furry: '福瑞/兽圈', notice_tag_gay: '男同性恋', notice_tag_mihoyo: '米哈游', notice_tag_politics: '政治立场', notice_tag_cp: '未成年人色情',
+        notice_quote: '迷茫者会感谢你的尊重。', footer_text1: '愿星辰与你同在。', footer_copyright: '椎名绫宫 © 2026 All Rights Reserved'
+      },
+      'zh-TW': {
+        nav_title: '椎名綾宮 · REALITY', nav_about: '關於我', nav_projects: '專案', nav_contact: '聯繫', nav_notice: '須知',
+        hero_title: '請，重新認識我。', hero_text1: '認識彼此真的很不容易……', hero_text2: '但我相信你，追尋者。', hero_name: '椎名綾宮，很高興認識你。',
+        sidebar_message: '個人留言', sidebar_message_text: '歡迎來到我的小站～\n存在於網路末端的避風港，設計很陽春……\n不過相遇就是緣分啦 :)', sidebar_words: '隻言片語', sidebar_links: '友情連結',
+        about_title: '我是誰 · Self Definition', about_desc: '涉獵廣卻不精的迷茫者，INFP-T。',
+        tag_writing: '文字創作', tag_python: 'Python/後端開發', tag_vocaloid: 'Vocaloid', tag_painting: '繪畫', tag_vn: '視覺小說', tag_os: 'Android/Linux', tag_ui: 'UI設計',
+        game_pjsk: '初音未來：繽紛舞台', game_wemx: '物華彌新', game_1999: '重返未來：1999', game_phira: 'Phira',
+        about_quote: '能夠共鳴的旋律不常存在，所以……請好好珍惜。',
+        projects_title: '我的專案 · Projects for Everyone', proj_brokenwings: '殘翼', proj_tag_vn: '視覺小說', proj_status_ongoing: '開發中', proj_brokenwings_desc: '平行線總會在無限遠處相交，對吧？', proj_website: '專案首頁',
+        proj_timer: '時間 TIMER', proj_tag_tool: '實用工具', proj_status_online: '線上', proj_timer_desc: '以指定時間為終點的簡易倒數工具。', proj_useonline: '線上使用',
+        proj_tag_gnome: 'GNOME 擴充功能', proj_status_maintain: '維護中', proj_panelhud_desc: '在面板上顯示文字並透過API控制。', proj_repo: '專案儲存庫',
+        proj_status_refactor: '重構中', proj_oxygen_desc: '適用於教學環境的工具組與附加元件。', proj_closed: '暫停開放',
+        contact_title: '聯繫我 · Connect to Reality', contact_qq: 'QQ: 210308731',
+        notice_title: '注意事項 · Before You Act', notice_text1: '在開始之前，希望你能尊重每個人的意願。', notice_text2: '請勿提及/討論下列內容：',
+        notice_tag_furry: '福瑞/獸圈', notice_tag_gay: '男同性戀', notice_tag_mihoyo: '米哈遊', notice_tag_politics: '政治立場', notice_tag_cp: '未成年色情',
+        notice_quote: '迷茫者會感謝你的尊重。', footer_text1: '願星辰與你同在。', footer_copyright: '椎名綾宮 © 2026 All Rights Reserved'
+      },
+      'zh-MIAO': {
+        nav_title: '喵~椎名绫宫 · REALITY', nav_about: '喵の介绍', nav_projects: '喵の作品', nav_contact: '找喵玩', nav_notice: '要记住哦',
+        hero_title: '呜哇~请重新认识喵啦🥺', hero_text1: '和人类认识真的好难好难喵...', hero_text2: '但喵相信你哦，最棒的追寻者~', hero_name: '喵~我是椎名绫宫，很高兴见到你呀！',
+        sidebar_message: '喵の悄悄话', sidebar_message_text: '欢迎来到喵的小窝~\n是藏在网络尽头的避难所喵！\n设计虽然简单，但能相遇就是超棒的缘分啦🥰', sidebar_words: '喵の碎碎念', sidebar_links: '喵友链接',
+        about_title: '喵是谁呀 · Self Definition', about_desc: '什么都会一点点的迷茫小猫猫，INFP-T喵~',
+        tag_writing: '写小作文', tag_python: '敲代码喵', tag_vocaloid: '唱歌歌', tag_painting: '画圈圈', tag_vn: '小故事', tag_os: '操作高雅系统', tag_ui: '做漂亮界面',
+        game_pjsk: '初音未来：缤纷舞台', game_wemx: '物华弥新', game_1999: '重返未来：1999', game_phira: 'Phira',
+        about_quote: '能共鸣的旋律不常见喵...所以一定要好好珍惜哦~',
+        projects_title: '喵的小作品 · Projects for Everyone', proj_brokenwings: '残翼', proj_tag_vn: '视觉小说', proj_status_ongoing: '努力制作中', proj_brokenwings_desc: '平行线会在很远很远的地方相遇喵，对不对？', proj_website: '去看看喵',
+        proj_timer: '时间小闹钟', proj_tag_tool: '实用小工具', proj_status_online: '可以用啦', proj_timer_desc: '可以倒计时的可爱小工具喵~', proj_useonline: '在线玩喵',
+        proj_tag_gnome: 'GNOME 小插件', proj_status_maintain: '好好维护', proj_panelhud_desc: '在面板上显示文字，还能远程控制喵~', proj_repo: '项目仓库',
+        proj_status_refactor: '重新优化', proj_oxygen_desc: '给教学环境用的工具套装喵~', proj_closed: '暂时关闭啦',
+        contact_title: '找到喵喵 · Connect to Reality', contact_qq: 'QQ喵：210308731',
+        notice_title: '要乖乖记住哦 · Before You Act', notice_text1: '在和喵聊天前，一定要尊重每个人的心意喵~', notice_text2: '这些话题不可以说哦：',
+        notice_tag_furry: '福瑞/兽圈', notice_tag_gay: '男同性恋', notice_tag_mihoyo: '米哈游', notice_tag_politics: '政治立场', notice_tag_cp: '未成年人色情',
+        notice_quote: '小猫会超级感谢你的尊重喵~', footer_text1: '愿星星一直陪着你喵✨', footer_copyright: '椎名绫宫 © 2026 版权所有喵~'
+      },
+      'en-US': {
+        nav_title: 'Shiina Ayamiya · REALITY', nav_about: 'About Me', nav_projects: 'Projects', nav_contact: 'Contact', nav_notice: 'Notice',
+        hero_title: 'Please, get to know me again.', hero_text1: 'Acquaintance is really a difficult thing......', hero_text2: 'But I believe in you, seeker.', hero_name: 'Shiina Ayamiya, nice to meet you.',
+        sidebar_message: 'Personal Message', sidebar_message_text: 'Welcome to my little site ~ \nA sanctuary at the end of the internet. The design is simple... \nbut meeting is fate :)', sidebar_words: 'Random Words', sidebar_links: 'Friend Links',
+        about_title: 'Who Am I · Self Definition', about_desc: 'A confused person with broad but not deep interests, INFP-T.',
+        tag_writing: 'Writing', tag_python: 'Python/Backend Dev', tag_vocaloid: 'Vocaloid', tag_painting: 'Painting', tag_vn: 'Visual Novel', tag_os: 'Android/Linux', tag_ui: 'UI Design',
+        game_pjsk: 'Hatsune Miku: Colorful Stage', game_wemx: 'Neo Artifacts', game_1999: 'Reverse: 1999', game_phira: 'Phira',
+        about_quote: 'Resonant melodies do not always exist, so...... please cherish them.',
+        projects_title: 'My Projects · Projects for Everyone', proj_brokenwings: 'Broken Wings', proj_tag_vn: 'Visual Novel', proj_status_ongoing: 'Ongoing', proj_brokenwings_desc: 'Parallel lines always intersect at infinity, right?', proj_website: 'Project Page',
+        proj_timer: 'Time TIMER', proj_tag_tool: 'Utility Tool', proj_status_online: 'Online', proj_timer_desc: 'A simple countdown tool with a specified end time.', proj_useonline: 'Use Online',
+        proj_tag_gnome: 'GNOME Extension', proj_status_maintain: 'Maintaining', proj_panelhud_desc: 'Display text on the panel and control via interface.', proj_repo: 'Project Repo',
+        proj_status_refactor: 'Refactoring', proj_oxygen_desc: 'Toolset for teaching environments and its add-ons.', proj_closed: 'Temporarily Closed',
+        contact_title: 'Find Me · Connect to Reality', contact_qq: 'QQ: 210308731',
+        notice_title: 'Please Note · Before You Act', notice_text1: 'Before starting, I hope you respect everyone\'s personal wishes.', notice_text2: 'Please do not mention/discuss the following content:',
+        notice_tag_furry: 'Furry', notice_tag_gay: 'Gay', notice_tag_mihoyo: 'MiHoYo', notice_tag_politics: 'Political Stance', notice_tag_cp: 'Minor Pornography',
+        notice_quote: 'I will appreciate your respect.', footer_text1: 'May the stars be with you.', footer_copyright: 'Shiina Ayamiya © 2026 All Rights Reserved'
+      },
+      'ja-JP': {
+        nav_title: '椎名綾宮 · REALITY', nav_about: '自己紹介', nav_projects: 'プロジェクト', nav_contact: '連絡先', nav_notice: '注意事項',
+        hero_title: 'どうぞ、私のことを再認識してください。', hero_text1: '知り合うことは本当に難しいことです……', hero_text2: 'でも、追い求める人よ、信じています。', hero_name: '椎名綾宮、はじめまして。',
+        sidebar_message: '個人メッセージ', sidebar_message_text: '私の小さなサイトへようこそ～インターネットの果てにある避難所です。\nデザインは簡素ですが……\n出会いは縁です :)', sidebar_words: '一言一句', sidebar_links: '友情リンク',
+        about_title: '私について · Self Definition', about_desc: '幅広く浅く興味を持つ迷える者、INFP-T。',
+        tag_writing: '文章作成', tag_python: 'Python/バックエンド開発', tag_vocaloid: 'Vocaloid', tag_painting: '絵画', tag_vn: 'ビジュアルノベル', tag_os: 'Android/Linux', tag_ui: 'UIデザイン',
+        game_pjsk: 'PJSK', game_wemx: 'Neo Artifacts', game_1999: 'リバース：1999', game_phira: 'Phira',
+        about_quote: '共鳴する旋律は常に存在するわけではないので……大切にしてください。',
+        projects_title: '私のプロジェクト · Projects for Everyone', proj_brokenwings: '折れた翼', proj_tag_vn: 'ビジュアルノベル', proj_status_ongoing: '進行中', proj_brokenwings_desc: '平行線はいつも無限遠点で交わるのですよね？', proj_website: 'プロジェクトページ',
+        proj_timer: '時間 TIMER', proj_tag_tool: '実用ツール', proj_status_online: 'オンライン', proj_timer_desc: '指定した時間を終点とする簡素なカウントダウンツール。', proj_useonline: 'オンラインで使用',
+        proj_tag_gnome: 'GNOME 拡張機能', proj_status_maintain: 'メンテナンス中', proj_panelhud_desc: 'パネルにテキストを表示し、インターフェースで制御する。', proj_repo: 'プロジェクトリポジトリ',
+        proj_status_refactor: 'リファクタリング中', proj_oxygen_desc: '教育環境向けツールセットおよびそのアドオン。', proj_closed: '一時的に公開停止',
+        contact_title: '私を見つける · Connect to Reality', contact_qq: 'QQ: 210308731',
+        notice_title: 'ご留意ください · Before You Act', notice_text1: '始める前に、誰もが個人の意思を尊重してほしいです。', notice_text2: '以下の内容については言及/議論しないでください：',
+        notice_tag_furry: 'ファーリー', notice_tag_gay: 'ゲイ', notice_tag_mihoyo: 'ミハユー', notice_tag_politics: '政治的立場', notice_tag_cp: '未成年ポルノ',
+        notice_quote: '迷える者はあなたの尊重に感謝します。', footer_text1: '星があなたと共にありますように。', footer_copyright: '椎名綾宮 © 2026 All Rights Reserved'
       }
-    }
-    loadHitokoto();
+    };
 
-    // 平滑滚动（已通过 scroll-behavior: smooth 全局实现，此处保留原逻辑兼容）
-    document.querySelectorAll('a[href^="#"]').forEach(a => {
-      a.addEventListener('click', e => {
-        e.preventDefault();
-        const target = document.querySelector(a.getAttribute('href'));
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth' });
-        }
+    // 语言切换逻辑
+    const languageBtn = document.getElementById('languageBtn');
+    const languageDropdown = document.getElementById('languageDropdown');
+    const languageOptions = document.querySelectorAll('.language-option');
+    
+    languageBtn.addEventListener('click', () => {
+      languageDropdown.classList.toggle('active');
+    });
+    
+    languageOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        const code = option.getAttribute('data-code');
+        setLanguage(code);
+        
+        // 更新选中状态
+        languageOptions.forEach(opt => opt.classList.remove('active-lang'));
+        option.classList.add('active-lang');
+        languageDropdown.classList.remove('active');
       });
     });
-
-    // 光标跟随
-    const cursor = document.querySelector('.custom-cursor');
-    let activeEl = null;
-
-    document.addEventListener('mousemove', (e) => {
-      cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
-      const el = document.elementFromPoint(e.clientX, e.clientY).closest('.glow-box');
-      
-      if (activeEl !== el) {
-        if (activeEl) activeEl.classList.remove('hover-glow');
-        activeEl = el;
-        if (activeEl) activeEl.classList.add('hover-glow');
+    
+    // 点击外部关闭下拉菜单
+    document.addEventListener('click', (e) => {
+      if (!languageBtn.contains(e.target) && !languageDropdown.contains(e.target)) {
+        languageDropdown.classList.remove('active');
       }
     });
+    
+    function setLanguage(code) {
+      const elements = document.querySelectorAll('[data-lang]');
+      elements.forEach(el => {
+        const key = el.getAttribute('data-lang');
+        if (translations[code] && translations[code][key]) {
+          el.textContent = translations[code][key];
+        }
+      });
+      document.documentElement.lang = code;
+    }
 
-    document.addEventListener('mouseleave', () => {
-      if (activeEl) activeEl.classList.remove('hover-glow');
-      activeEl = null;
-    });
-
-    // 返回顶部按钮逻辑
-    const backToTopBtn = document.getElementById('backToTop');
-    const heroSection = document.getElementById('hero');
-
-    // 监听滚动事件
-    window.addEventListener('scroll', () => {
-      // 获取hero区域的底部位置
-      const heroBottom = heroSection.getBoundingClientRect().bottom;
-      
-      // 当hero区域完全离开视口时显示按钮
-      if (heroBottom < 0) {
-        backToTopBtn.classList.add('visible');
+    // 主题切换
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = themeToggle.querySelector('i');
+    
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('light');
+      if (document.body.classList.contains('light')) {
+        themeIcon.classList.remove('fa-moon-o');
+        themeIcon.classList.add('fa-sun-o');
       } else {
-        backToTopBtn.classList.remove('visible');
+        themeIcon.classList.remove('fa-sun-o');
+        themeIcon.classList.add('fa-moon-o');
       }
     });
 
-    // 点击返回顶部
-    backToTopBtn.addEventListener('click', () => {
+// 自定义光标 - 纯即时跟随，无任何缓动延迟
+const cursor = document.querySelector('.custom-cursor');
+document.addEventListener('mousemove', (e) => {
+  // 直接设置位置，无过渡、无延迟
+  cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+});
+
+    // 返回顶部
+    const backToTop = document.getElementById('backToTop');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 300) {
+        backToTop.classList.add('visible');
+      } else {
+        backToTop.classList.remove('visible');
+      }
+    });
+    
+    backToTop.addEventListener('click', () => {
       window.scrollTo({
         top: 0,
         behavior: 'smooth'
       });
     });
+
+    // 一言API
+    function fetchHitokoto() {
+      fetch('https://v1.hitokoto.cn/')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('hitokoto-text').textContent = data.hitokoto;
+          document.getElementById('hitokoto-from').textContent = `—— ${data.from || '未知'}`;
+        })
+        .catch(err => {
+          document.getElementById('hitokoto-text').textContent = '相遇即是缘分，珍惜当下。';
+          document.getElementById('hitokoto-from').textContent = '—— 椎名绫宫';
+        });
+    }
+    
+    // 页面加载完成后获取一言
+    window.addEventListener('DOMContentLoaded', fetchHitokoto);
+
+// ==============================
+// 深色模式：更白、更亮、更明显 | 浅色模式：保持柔和
+// 向上雨 + 溅射 + 波纹 · 极致性能
+// ==============================
+const canvas = document.getElementById('rainCanvas');
+const ctx = canvas.getContext('2d');
+
+let splashes = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+const rainDrops = [];
+for (let i = 0; i < 130; i++) {
+  rainDrops.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    length: Math.random() * 14 + 5,
+    speed: Math.random() * 4.5 + 2,
+    opacity: Math.random() * 0.5 + 0.3
+  });
+}
+
+function createSplash(x, y) {
+  const count = 3 + Math.random() * 3;
+  for (let i = 0; i < count; i++) {
+    splashes.push({
+      x, y,
+      vx: (Math.random() - 0.5) * 2,
+      vy: Math.random() * -1.8,
+      life: 20 + Math.random() * 10,
+      opacity: 0.7,
+      type: 'drop'
+    });
+  }
+}
+
+function createRipple(x, y) {
+  splashes.push({
+    x, y, r: 0, maxR: 12, opacity: 0.35, type: 'ripple'
+  });
+}
+
+function drawRain() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const isLight = document.body.classList.contains('light');
+
+  rainDrops.forEach(d => {
+    // ======================
+    // 深色模式 → 更白、更亮、更粗、不透明度更高
+    // ======================
+    if (!isLight) {
+      ctx.strokeStyle = `rgba(255, 255, 255, 0.5)`; // 纯白高亮
+      ctx.lineWidth = 1.4; // 更粗
+    } else {
+      ctx.strokeStyle = `rgba(60, 80, 120, 0.6)`;
+      ctx.lineWidth = 1.1;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(d.x, d.y);
+    ctx.lineTo(d.x, d.y + d.length);
+    ctx.stroke();
+
+    // 方向：深色向上，浅色向下
+    if (isLight) {
+      d.y += d.speed;
+      if (d.y > canvas.height - 15) {
+        createSplash(d.x, canvas.height - 8);
+        createRipple(d.x, canvas.height - 8);
+        d.y = -d.length;
+        d.x = Math.random() * canvas.width;
+      }
+    } else {
+      d.y -= d.speed;
+      if (d.y < -d.length) {
+        createSplash(d.x, 8);
+        createRipple(d.x, 8);
+        d.y = canvas.height + d.length;
+        d.x = Math.random() * canvas.width;
+      }
+    }
+  });
+
+  // 溅射 + 波纹
+  for (let i = splashes.length - 1; i >= 0; i--) {
+    const p = splashes[i];
+    if (p.type === 'drop') {
+      ctx.beginPath();
+      // 深色模式溅射也更白
+      ctx.fillStyle = !isLight
+        ? `rgba(255, 255, 255, ${p.opacity * 0.9})`
+        : `rgba(80, 120, 180, ${p.opacity})`;
+      ctx.arc(p.x, p.y, 1.3, 0, Math.PI * 2);
+      ctx.fill();
+
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.06;
+      p.opacity *= 0.9;
+      p.life--;
+      if (p.life <= 0) splashes.splice(i, 1);
+    }
+
+    if (p.type === 'ripple') {
+      ctx.beginPath();
+      ctx.strokeStyle = !isLight
+        ? `rgba(255, 255, 255, ${p.opacity})`
+        : `rgba(80, 120, 180, ${p.opacity})`;
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.stroke();
+
+      p.r += 0.45;
+      p.opacity *= 0.92;
+      if (p.r > p.maxR) splashes.splice(i, 1);
+    }
+  }
+
+  requestAnimationFrame(drawRain);
+}
+
+drawRain();
   </script>
 </body>
 </html>
