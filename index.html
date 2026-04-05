@@ -1,481 +1,506 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>椎名绫宫 - REALITY</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            border: none;
-            outline: none;
-        }
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('https://github.com/Teak75035/Teak75035.github.io/blob/main/Reverse.webp?raw=true') center/cover no-repeat;
-            z-index: -2;
-        }
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: -1;
-            pointer-events: none;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>椎名绫宫 · REALITY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <style>
+    @font-face {
+      font-family: 'CustomFont';
+      src: url('font.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
 
-        .rain-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-        .rain {
-            position: absolute;
-            background: linear-gradient(to top, 
-              rgba(255,255,255,0.95) 0%, 
-              rgba(255,255,255,0.6) 50%, 
-              rgba(255,255,255,0) 100%
-            );
-            width: 1.8px;
-            height: 85px;
-            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-            opacity: 0.85;
-            animation: rain-rise linear infinite;
-        }
-        @keyframes rain-rise {
-            0% { transform: translateY(100vh); opacity: 0; }
-            10% { opacity: 1; }
-            100% { transform: translateY(-100vh); opacity: 0; }
-        }
+    :root {
+      --cursor-outer-size: 24px;
+      --cursor-inner-size: 8px;
+      --cursor-shadow: 0 0 8px rgba(66, 153, 225, 0.8);
+      --glow-color: rgba(102, 204, 255, 0.4);
+      --primary: #66ccff;
+    }
 
-        body {
-            font-family: "SimSun", "宋体", serif;
-            color: #e2e8f0;
-            line-height: 1.8;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            position: relative;
-        }
+    * {
+      cursor: none !important;
+    }
 
-        /* 滚动重播动画基础类 */
-        .fade-in-section {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.8s ease, transform 0.8s ease;
-        }
-        .fade-in-section.is-visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    /* 光标：最高层级 9999 */
+    .custom-cursor {
+      position: fixed;
+      width: var(--cursor-outer-size);
+      height: var(--cursor-outer-size);
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999; /* 最高 */
+      transform: translate(-50%, -50%);
+      box-shadow: var(--cursor-shadow);
+      transition: none !important;
+    }
+    .custom-cursor::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: var(--cursor-inner-size);
+      height: var(--cursor-inner-size);
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: var(--cursor-shadow);
+    }
 
-        .glass {
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            position: relative;
-            z-index: 10;
-        }
-        header {
-            width: 100%;
-            padding: 1.2rem 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 999;
-            border-bottom: 1px solid #1e293b;
-        }
-        nav {
-            width: 90%;
-            max-width: 1000px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .nav-title {
-            font-size: 1.4rem;
-            color: #ffffff;
-            letter-spacing: 1px;
-        }
-        .nav-links {
-            display: flex;
-            gap: 1.8rem;
-        }
-        .nav-links a {
-            color: #cbd5e1;
-            text-decoration: none;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-        .nav-links a:hover {
-            color: #ccbdb9;
-            transform: translateY(-2px);
-        }
-        .hero {
-            width: 100%;
-            min-height: 42vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            padding-top: 8rem;
-            background: transparent !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-            box-shadow: none !important;
-            z-index: 10;
-        }
-        /* 关键：保留所有空格，不合并 */
-        .typewriter {
-            opacity: 0;
-            white-space: pre-wrap !important;
-            word-wrap: break-word;
-        }
-        .hero h1.typewriter {
-            font-size: 2.4rem;
-            color: #ccbdb9;
-            margin-bottom: 0.8rem;
-            letter-spacing: 2px;
-            width: fit-content;
-            white-space: nowrap !important;
-        }
-        .hero p.typewriter {
-            font-size: 1.1rem;
-            color: #ffffff;
-            width: fit-content;
-            white-space: nowrap !important;
-        }
+    /* 带框元素发光悬浮 */
+    .hover-glow {
+      box-shadow: 0 0 12px var(--glow-color), inset 0 0 4px rgba(102, 204, 255, 0.2);
+      transform: translateY(-2px);
+      border-color: rgba(102, 204, 255, 0.3);
+    }
 
-        main {
-            width: 90%;
-            max-width: 900px;
-            margin: 3rem auto;
-            padding: 2rem;
-        }
-        .section {
-            margin-bottom: 5rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .section h2 {
-            font-size: 1.7rem;
-            color: #ccbdb9;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #1e293b;
-            width: fit-content;
-        }
-        .section p {
-            max-width: 700px;
-            margin-bottom: 1rem;
-            color: #cbd5e1;
-        }
-        .tag-group {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 0.8rem;
-            margin: 0.5rem 0 1.5rem 0;
-        }
-        .tag {
-            padding: 0.4rem 1.1rem;
-            background: rgba(0, 0, 0, 0.5);
-            color: #ffffff;
-            font-size: 0.9rem;
-            border-radius: 4px;
-            text-decoration: none;
-            transition: all 0.25s ease;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .tag:hover {
-            background: rgba(0, 0, 0, 0.6);
-            border-color: #ccbdb988;
-            transform: translateY(-2px);
-            box-shadow: 0 0 8px #ccbdb933;
-        }
-        .project-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 1.5rem;
-            width: 100%;
-            margin-top: 1rem;
-        }
-        .project-card {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 1.8rem 1.5rem;
-            transition: all 0.35s ease;
-            border: 1px solid #1e293b;
-            border-radius: 8px;
-        }
-        .project-card:hover {
-            border-color: #ccbdb9;
-            transform: translateY(-6px);
-            box-shadow: 0 8px 25px #ccbdb922;
-        }
-        .project-card h3 {
-            font-size: 1.25rem;
-            color: #fff;
-            margin-bottom: 0.5rem;
-        }
-        .mark-group {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        .mark {
-            display: inline-block;
-            background: rgba(0, 0, 0, 0.5);
-            color: #ffffff !important;
-            padding: 0.3rem 0.8rem;
-            font-size: 0.85rem;
-            font-weight: normal;
-            border-radius: 4px;
-            border: 1px solid rgba(255,255,255,0.2);
-            transition: all 0.25s ease;
-        }
-        .mark:hover {
-            border-color: #ccbdb988;
-        }
-        .project-card p {
-            color: #94a3b8;
-            margin-bottom: 1.2rem;
-        }
-        .project-card a {
-            color: #ccbdb9;
-            text-decoration: none;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-        }
-        .project-card a:hover {
-            color: #ffffff;
-            text-shadow: 0 0 6px #ccbdb955;
-        }
-        .notice {
-            background: transparent;
-            padding: 0;
-            margin-top: 0;
-            width: 100%;
-            max-width: 700px;
-            border-radius: 0;
-        }
-        footer {
-            width: 100%;
-            padding: 2rem 1rem;
-            border-top: 1px solid #1e293b;
-            margin-top: auto;
-        }
-        footer p {
-            color: #64748b;
-            font-size: 0.95rem;
-            margin: 0.2rem 0;
-        }
-        @media (max-width: 768px) {
-            nav { flex-direction: column; gap: 1rem; }
-            .hero h1 { font-size: 2rem; }
-            .project-grid { grid-template-columns: 1fr; }
-        }
-    </style>
+    /* 文字链接动画 */
+    .link-underline {
+      position: relative;
+      color: inherit;
+      transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+    .link-underline::before {
+      content: attr(data-text);
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--primary);
+      white-space: nowrap;
+      overflow: hidden;
+      width: 0%;
+      transition: width 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+      pointer-events: none;
+    }
+    .link-underline::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -2px;
+      height: 2px;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+      pointer-events: none;
+    }
+    .link-underline:hover::before,
+    .link-underline:hover::after {
+      width: 100%;
+    }
+
+    /* 🔥 向下滑动提示箭头 · 非线性柔和动画 */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      animation: scrollHint 2.2s cubic-bezier(0.22, 1, 0.36, 1) infinite alternate;
+    }
+    @keyframes scrollHint {
+      0% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 1; transform: translateX(-50%) translateY(12px); }
+    }
+
+    /* 🔥 完美无缝滚动 + z-index 层级修复（最底层） */
+    .scroll-text-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: calc(100vh / 3);
+      overflow: hidden;
+      pointer-events: none;
+      z-index: -1; /* 🔥 修复：放在最底层 */
+    }
+    .scroll-wrap {
+      display: flex;
+      gap: 0;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      animation: scroll 18s linear infinite;
+    }
+    .scroll-text {
+      font-size: clamp(8rem, 20vw, 15rem);
+      font-weight: bold;
+      color: white;
+      opacity: 0.1;
+      white-space: nowrap;
+      padding-right: 2rem;
+    }
+    @keyframes scroll {
+      0% { transform: translateY(-50%) translateX(0); }
+      100% { transform: translateY(-50%) translateX(-50%); }
+    }
+
+    /* 返回顶部按钮样式 */
+    .back-to-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(102, 204, 255, 0.3);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 9998;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      box-shadow: 0 0 8px rgba(66, 153, 225, 0.4);
+    }
+
+    .back-to-top.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .back-to-top:hover {
+      background: rgba(15, 23, 42, 0.9);
+      box-shadow: 0 0 12px var(--glow-color);
+      transform: translateY(-2px);
+    }
+  </style>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#66ccff',
+            dark: '#0f172a',
+            glass: 'rgba(15, 23, 42, 0.7)',
+          },
+          fontFamily: {
+            sans: ['CustomFont', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .scrollbar-hide::-webkit-scrollbar { display: none; }
+      .scrollbar-hide { -ms-overflow-style: none; scroll-width: none; }
+      .scroll-mt-24 { scroll-margin-top: 6rem; }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #0f172a;
+      color: #f1f5f9;
+      line-height: 1.7;
+      overflow-x: hidden;
+      scroll-behavior: smooth; /* 全局平滑滚动 */
+    }
+    .card {
+      @apply bg-glass backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-white/10 shadow-xl mb-6;
+    }
+    .glow-box {
+      transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+    }
+  </style>
 </head>
-<body>
-    <div class="rain-container" id="rain"></div>
 
-    <header class="glass">
-        <nav>
-            <div class="nav-title">椎名绫宫 · REALITY</div>
-            <div class="nav-links">
-                <a href="#who">我是谁</a>
-                <a href="#projects">项目</a>
-                <a href="#contact">联系</a>
-                <a href="#notice">须知</a>
-            </div>
-        </nav>
-    </header>
+<body class="scrollbar-hide">
+  <div class="custom-cursor"></div>
+
+  <!-- 导航 z-index: 50 -->
+  <nav class="fixed top-0 w-full z-50 bg-glass backdrop-blur-xl border-b border-white/10">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-3">
+      <a href="#" data-text="椎名绫宫 · REALITY" class="link-underline text-xl font-semibold text-white flex items-center gap-2">
+        <i class="fa fa-star text-primary"></i> 椎名绫宫 · REALITY
+      </a>
+      <div class="flex gap-5 text-sm md:text-base">
+        <a href="#about" data-text="关于我" class="link-underline">关于我</a>
+        <a href="#projects" data-text="项目" class="link-underline">项目</a>
+        <a href="#contact" data-text="联系" class="link-underline">联系</a>
+        <a href="#notice" data-text="须知" class="link-underline">须知</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero 内容 z-index: 10 确保在文字上方 -->
+  <section id="hero" class="min-h-screen flex flex-col justify-center items-center px-4 text-center relative">
+    <div class="max-w-2xl px-4 z-10"> <!-- 🔥 内容层级高于滚动文字 -->
+      <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-white mb-5 tracking-wide">请，重新认识我。</h1>
+      <p class="text-lg md:text-xl text-white/95 mb-3 tracking-wide font-medium">Welcome to REALITY.</p>
+      <p class="text-white/90 mb-2">相识真是一件很困难的事情......</p>
+      <p class="text-white/90 mb-2">但我相信你，追寻者。</p>
+      <p class="mt-6 text-white/95 font-medium">椎名绫宫，很高兴认识你。</p>
+    </div>
+
+    <!-- 🔥 向下滑动提示箭头（已加） -->
+    <div class="scroll-indicator">
+      <i class="fa fa-angle-down text-3xl text-primary/80"></i>
+    </div>
     
-    <section class="hero">
-        <h1 class="typewriter">请，重新认识我。</h1>
-        <p class="typewriter line1">Welcome to REALITY.</p>
-        <p class="typewriter line2">相识真是一件很困难的事情......</p>
-        <p class="typewriter line3">但我相信你，追寻者。</p>
-        <p class="typewriter line4">椎名绫宫，很高兴认识你。</p>
-    </section>
-    
-    <main class="glass">
-        <section id="who" class="section fade-in-section">
-            <h2>我是谁 · Self Definition</h2>
-            <p>涉猎广而不精的迷茫者，INFP-T。</p>
-            <div class="tag-group">
-                <span class="tag fade-in-section">文字创作</span>
-                <span class="tag fade-in-section">Python/后端开发</span>
-                <span class="tag fade-in-section">Vocaloid</span>
-                <span class="tag fade-in-section">绘画</span>
-                <span class="tag fade-in-section">视觉小说</span>
-                <span class="tag fade-in-section">Android/Linux</span>
-                <span class="tag fade-in-section">UI设计</span>
+    <!-- 滚动文字（底层） -->
+    <div class="scroll-text-container">
+      <div class="scroll-wrap">
+        <span class="scroll-text">WELCOME TO REALITY # </span>
+        <span class="scroll-text">WELCOME TO REALITY # </span>
+        <span class="scroll-text">WELCOME TO REALITY # </span>
+        <span class="scroll-text">WELCOME TO REALITY # </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 主内容 -->
+  <main class="max-w-6xl mx-auto px-4 pb-20 relative z-10">
+    <div class="flex flex-col lg:flex-row gap-6">
+      <div class="lg:w-[280px] w-full flex-shrink-0">
+        <div class="card">
+          <h2 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fa fa-comment text-primary"></i> 个人留言
+          </h2>
+          <p class="text-gray-300 text-sm whitespace-pre-line">欢迎来到我的小站~存在于互联网末端的避难所，设计很简陋...不过相遇就是缘分啦 :)</p>
+        </div>
+        <div class="card">
+          <h2 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fa fa-quote-left text-primary"></i> 只言片语
+          </h2>
+          <div id="hitokoto" class="flex flex-col gap-2">
+            <div class="flex items-start gap-2">
+              <i class="fa fa-quote-left text-primary mt-1"></i>
+              <p id="hitokoto-text" class="text-sm text-gray-300">加载中...</p>
             </div>
-            <div class="tag-group">
-                <span class="tag fade-in-section">初音未来：缤纷舞台</span>
-                <span class="tag fade-in-section">物华弥新</span>
-                <span class="tag fade-in-section">重返未来：1999</span>
-                <span class="tag fade-in-section">Phira</span>
-            </div>
-            <p>共鸣的旋律并不总是存在，所以......请珍惜吧。</p>
+            <p id="hitokoto-from" class="text-right text-xs text-gray-400/70"></p>
+          </div>
+        </div>
+        <div class="card">
+          <h2 class="text-xl font-semibold text-white mb-5 flex items-center gap-2">
+            <i class="fa fa-link text-primary"></i> 友情链接
+          </h2>
+          <div class="flex flex-col gap-3">
+            <a href="https://www.haitang000.cn" target="_blank" class="px-3 py-2 bg-white/10 rounded-lg text-sm hover:bg-white/15 transition-all glow-box">haitang000</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-1">
+        <section id="about" class="card scroll-mt-24">
+          <h2 class="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
+            <i class="fa fa-user-circle text-primary"></i> 我是谁 · Self Definition
+          </h2>
+          <p class="text-gray-300 mb-6">涉猎广而不精的迷茫者，INFP-T。</p>
+          <div class="flex flex-wrap justify-center gap-2 mb-8">
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box">文字创作</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box">Python/后端开发</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box">Vocaloid</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box">绘画</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box">视觉小说</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box">Android/Linux</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box">UI设计</span>
+          </div>
+          <div class="flex flex-wrap justify-center gap-2 mb-6">
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box">初音未来：缤纷舞台</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box">物华弥新</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box">重返未来：1999</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box">Phira</span>
+          </div>
+          <p class="text-gray-400 italic text-center">共鸣的旋律并不总是存在，所以......请珍惜吧。</p>
         </section>
 
-        <section id="projects" class="section fade-in-section">
-            <h2>我的项目 · Projects for Everyone</h2>
-            <div class="project-grid">
-                <div class="project-card fade-in-section">
-                    <h3>残翼</h3>
-                    <div class="mark-group">
-                        <span class="mark">视觉小说</span>
-                        <span class="mark">进行中</span>
-                    </div>
-                    <p>平行线总在无穷远处相交，对吧？</p>
-                    <a href="https://teak75035.github.io/broken-wings" target="_blank">项目主页</a>
-                </div>
-                <div class="project-card fade-in-section">
-                    <h3>时间 TIMER</h3>
-                    <div class="mark-group">
-                        <span class="mark">实用工具</span>
-                        <span class="mark">在线中</span>
-                    </div>
-                    <p>以指定时间为终点的简约倒计时工具。</p>
-                    <a href="https://teak75035.github.io/timer" target="_blank">在线使用</a>
-                </div>
-                <div class="project-card fade-in-section">
-                    <h3>PanelHUD</h3>
-                    <div class="mark-group">
-                        <span class="mark">GNOME 拓展</span>
-                        <span class="mark">维护中</span>
-                    </div>
-                    <p>在面板上显示文字并通过接口控制。</p>
-                    <a href="https://github.com/Teak75035/panelhud-gnome-extension" target="_blank">项目仓库</a>
-                </div>
-                <div class="project-card fade-in-section">
-                    <h3>Oxygen 3</h3>
-                    <div class="mark-group">
-                        <span class="mark">实用工具</span>
-                        <span class="mark">重构中</span>
-                    </div>
-                    <p>适用于教学环境的工具集及其附加组件。</p>
-                    <a href="#" target="_blank">暂停开放</a>
-                </div>
+        <section id="projects" class="card scroll-mt-24">
+          <h2 class="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
+            <i class="fa fa-cubes text-primary"></i> 我的项目 · Projects for Everyone
+          </h2>
+          <!-- 🔥 修复：sm:grid-cols-2 加了横杠，双列正常 -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div class="bg-white/10 p-5 rounded-xl border border-white/10 hover:border-primary/40 transition-all glow-box">
+              <h3 class="font-medium text-lg mb-2 flex items-center gap-2 text-white">
+                <i class="fa fa-book text-primary"></i> 残翼
+              </h3>
+              <div class="flex gap-2 mb-3">
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs">视觉小说</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs">Ren'Py</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs">进行中</span>
+              </div>
+              <p class="text-gray-400 text-sm mb-4">平行线总在无穷远处相交，对吧？</p>
+              <a href="https://teak75035.github.io/broken-wings" target="_blank" data-text="　　　　" class="link-underline text-primary text-sm">项目主页</a>
             </div>
+            <div class="bg-white/10 p-5 rounded-xl border border-white/10 hover:border-primary/40 transition-all glow-box">
+              <h3 class="font-medium text-lg mb-2 flex items-center gap-2 text-white">
+                <i class="fa fa-clock-o text-primary"></i> 时间 TIMER
+              </h3>
+              <div class="flex gap-2 mb-3">
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs">实用工具</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs">HTML</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs">在线中</span>
+              </div>
+              <p class="text-gray-400 text-sm mb-4">以指定时间为终点的简约倒计时工具。</p>
+              <a href="https://teak75035.github.io/timer" target="_blank" data-text="　　　　" class="link-underline text-primary text-sm">在线使用</a>
+            </div>
+            <div class="bg-white/10 p-5 rounded-xl border border-white/10 hover:border-primary/40 transition-all glow-box">
+              <h3 class="font-medium text-lg mb-2 flex items-center gap-2 text-white">
+                <i class="fa fa-desktop text-primary"></i> PanelHUD
+              </h3>
+              <div class="flex gap-2 mb-3">
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs">GNOME 拓展</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs">JS/Python</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs">维护中</span>
+              </div>
+              <p class="text-gray-400 text-sm mb-4">在面板上显示文字并通过接口控制。</p>
+              <a href="https://github.com/Teak75035/panelhud-gnome-extension" target="_blank" data-text="　　　　" class="link-underline text-primary text-sm">项目仓库</a>
+            </div>
+            <div class="bg-white/10 p-5 rounded-xl border border-white/10 hover:border-primary/40 transition-all glow-box">
+              <h3 class="font-medium text-lg mb-2 flex items-center gap-2 text-white">
+                <i class="fa fa-wrench text-primary"></i> Oxygen 3
+              </h3>
+              <div class="flex gap-2 mb-3">
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs">实用工具</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs">Python</span>
+                <span class="px-2 py-0.5 bg-white/5 rounded text-xs">重构中</span>
+              </div>
+              <p class="text-gray-400 text-sm mb-4">适用于教学环境的工具集及其附加组件。</p>
+              <a href="#" data-text="　　　　" class="link-underline text-primary text-sm">暂停开放</a>
+            </div>
+          </div>
         </section>
 
-        <section id="contact" class="section fade-in-section">
-            <h2>找到我 · Connect to Reality</h2>
-            <div class="tag-group">
-                <a href="https://github.com/Teak75035/" target="_blank" class="tag fade-in-section">Github</a>
-                <a href="mailto:musicteak100@gmail.com" target="_blank" class="tag fade-in-section">Email</a>
-                <a href="https://t.me/lingxianww#" target="_blank" class="tag fade-in-section">Telegram</a>
-                <a href="https://space.bilibili.com/660590377" target="_blank" class="tag fade-in-section">Bilibili</a>
-                <a href="https://teaaaak.lofter.com/" target="_blank" class="tag fade-in-section">LOFTER</a>
-                <a href="tencent://AddContact/?uin=210308731" target="_blank" class="tag fade-in-section">QQ: 210308731</a>
-            </div>
+        <section id="contact" class="card scroll-mt-24">
+          <h2 class="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
+            <i class="fa fa-paper-plane text-primary"></i> 找到我 · Connect to Reality
+          </h2>
+          <div class="flex flex-wrap justify-center gap-3">
+            <a href="https://github.com/Teak75035/" target="_blank" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box">
+              <i class="fa fa-github text-primary"></i> Github
+            </a>
+            <a href="mailto:musicteak100@gmail.com" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box">
+              <i class="fa fa-envelope text-primary"></i> Email
+            </a>
+            <a href="https://t.me/lingxianww" target="_blank" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box">
+              <i class="fa fa-telegram text-primary"></i> Telegram
+            </a>
+            <a href="https://space.bilibili.com/660590377" target="_blank" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box">
+              <i class="fa fa-play-circle text-primary"></i> Bilibili
+            </a>
+            <a href="https://teaaaak.lofter.com/" target="_blank" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box">
+              <i class="fa fa-bookmark text-primary"></i> LOFTER
+            </a>
+            <a href="tencent://AddContact/?uin=210308731" class="px-4 py-2 bg-white/10 rounded-xl flex items-center gap-2 hover:bg-white/15 transition-all glow-box">
+              <i class="fa fa-qq text-primary"></i> QQ: 210308731
+            </a>
+          </div>
         </section>
 
-        <section id="notice" class="section fade-in-section">
-            <h2>请你知悉 · Before You Act</h2>
-            <div class="notice">
-                <p>在开始前，我希望你能尊重每个人的个人意愿。</p>
-                <p>请不要提及/讨论以下内容：</p>
-                <div class="tag-group">
-                    <span class="tag fade-in-section">福瑞/兽圈</span>
-                    <span class="tag fade-in-section">男同性恋</span>
-                    <span class="tag fade-in-section">米哈游</span>
-                    <span class="tag fade-in-section">政治立场</span>
-                    <span class="tag fade-in-section">未成年人色情</span>
-                </div>
-                <p>迷茫者会感谢你的尊重。</p>
+        <section id="notice" class="card scroll-mt-24">
+          <h2 class="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
+            <i class="fa fa-exclamation-circle text-primary"></i> 请你知悉 · Before You Act
+          </h2>
+          <div class="max-w-xl mx-auto text-center">
+            <p class="text-gray-300 mb-4">在开始前，我希望你能尊重每个人的个人意愿。</p>
+            <p class="text-gray-300 mb-4">请不要提及/讨论以下内容：</p>
+            <div class="flex flex-wrap justify-center gap-2 mb-6">
+              <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box">福瑞/兽圈</span>
+              <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box">男同性恋</span>
+              <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box">米哈游</span>
+              <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box">政治立场</span>
+              <span class="px-3 py-1.5 bg-white/10 rounded-lg text-sm glow-box">未成年人色情</span>
             </div>
+            <p class="text-gray-400 italic">迷茫者会感谢你的尊重。</p>
+          </div>
         </section>
-    </main>
+      </div>
+    </div>
+  </main>
 
-    <footer class="glass">
-        <p>愿星辰与你同在。</p>
-        <p>椎名绫宫 - 2026 - 本页面内容更改恕不另行通知。</p>
-    </footer>
+  <footer class="py-8 text-center text-gray-500 text-sm border-t border-white/10 relative z-10">
+    <p>愿星辰与你同在。</p>
+    <p class="mt-2">椎名绫宫 © 2026 All Rights Reserved</p>
+  </footer>
 
-    <script>
-        // 雨滴
-        const rainContainer = document.getElementById('rain');
-        function createRain() {
-            const rainDrop = document.createElement('div');
-            rainDrop.classList.add('rain');
-            const left = Math.random() * 100;
-            const duration = Math.random() * 2 + 1.5;
-            const height = Math.random() * 70 + 50;
-            const opacity = Math.random() * 0.3 + 0.6;
-            
-            rainDrop.style.left = left + '%';
-            rainDrop.style.height = height + 'px';
-            rainDrop.style.animationDuration = duration + 's';
-            rainDrop.style.opacity = opacity;
-            
-            rainContainer.appendChild(rainDrop);
-            setTimeout(() => rainDrop.remove(), duration * 1000);
+  <!-- 返回顶部按钮 -->
+  <div class="back-to-top" id="backToTop">
+    <i class="fa fa-angle-up text-xl"></i>
+  </div>
+
+  <script>
+    // 一言
+    async function loadHitokoto() {
+      try {
+        const res = await fetch('https://v1.hitokoto.cn');
+        const data = await res.json();
+        document.getElementById('hitokoto-text').textContent = data.hitokoto;
+        let fromText = data.from_who ? `${data.from_who} · ${data.from}` : data.from;
+        document.getElementById('hitokoto-from').textContent = fromText;
+      } catch (e) {
+        document.getElementById('hitokoto-text').textContent = '加载失败';
+      }
+    }
+    loadHitokoto();
+
+    // 平滑滚动（已通过 scroll-behavior: smooth 全局实现，此处保留原逻辑兼容）
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
         }
-        setInterval(createRain, 110);
+      });
+    });
 
-        // 滚动时元素自动重播动画
-        const fadeElements = document.querySelectorAll('.fade-in-section');
-        function checkVisibility() {
-            fadeElements.forEach(el => {
-                const rect = el.getBoundingClientRect();
-                const isVisible = rect.top < window.innerHeight * 0.85 && rect.bottom > 0;
-                if (isVisible) {
-                    el.classList.add('is-visible');
-                } else {
-                    el.classList.remove('is-visible');
-                }
-            });
-        }
-        window.addEventListener('scroll', checkVisibility);
-        window.addEventListener('load', checkVisibility);
+    // 光标跟随
+    const cursor = document.querySelector('.custom-cursor');
+    let activeEl = null;
 
-        // ✅ 逐字打字（完美保留英文空格）
-        document.addEventListener('DOMContentLoaded', () => {
-            const elements = document.querySelectorAll('.hero .typewriter');
-            const charDelay = 80;
-            let totalTime = 0;
+    document.addEventListener('mousemove', (e) => {
+      cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
+      const el = document.elementFromPoint(e.clientX, e.clientY).closest('.glow-box');
+      
+      if (activeEl !== el) {
+        if (activeEl) activeEl.classList.remove('hover-glow');
+        activeEl = el;
+        if (activeEl) activeEl.classList.add('hover-glow');
+      }
+    });
 
-            elements.forEach(el => {
-                const text = el.textContent;
-                el.textContent = '';
-                el.style.opacity = 1;
+    document.addEventListener('mouseleave', () => {
+      if (activeEl) activeEl.classList.remove('hover-glow');
+      activeEl = null;
+    });
 
-                for (let i = 0; i < text.length; i++) {
-                    setTimeout(() => {
-                        el.textContent += text[i];
-                    }, totalTime);
-                    totalTime += charDelay;
-                }
-            });
-        });
-    </script>
+    // 返回顶部按钮逻辑
+    const backToTopBtn = document.getElementById('backToTop');
+    const heroSection = document.getElementById('hero');
+
+    // 监听滚动事件
+    window.addEventListener('scroll', () => {
+      // 获取hero区域的底部位置
+      const heroBottom = heroSection.getBoundingClientRect().bottom;
+      
+      // 当hero区域完全离开视口时显示按钮
+      if (heroBottom < 0) {
+        backToTopBtn.classList.add('visible');
+      } else {
+        backToTopBtn.classList.remove('visible');
+      }
+    });
+
+    // 点击返回顶部
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+  </script>
 </body>
 </html>
