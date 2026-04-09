@@ -52,3 +52,27 @@ OPPO Sans（含中文及西文，3 款字重）允许个人或企业免费使用
 3. 不向他方提供其他下载渠道；
 4. 不用于违法用途。
 ```
+
+### 一言 - Hitokoto
+```
+您好，
+歡迎使用一言語句包。
+
+使用須知：
+1. 語句包采用 AGPL 授權，您在使用本庫時需要遵守 AGPL 的相關規定。
+這通常意味著：在使用、分发、修改、扩充等涉及本库的操作时您需要开源您的修改作品。
+我們容許一個例外：通過下方提供的超鏈接方式使用我們的語句包，
+您將豁免 AGPL 的開源要求，以及授權傳播要求。
+2. 本库著作权并非完全由一言网持有，如果存在版權爭議歡迎聯係我們。
+3. 本库由系统自动维护，這意味著倉庫不受理任何反饋。歡迎通過電郵或反饋平臺向我們取得聯係。
+如果補充説明，將補充在此。
+項目開源地址： GitHub
+
+您可以使用以下三種方法引入我們提供的語句包：
+1. JSDelivr: https://cdn.jsdelivr.net/gh/hitokoto-osc/sentences-bundle@latest/
+2. Github Raw: https://raw.githubusercontent.com/hitokoto-osc/sentences-bundle/master/
+3. Pages: https://sentences-bundle.hitokoto.cn/
+
+頁面設計版權歸 Evan You 所有。
+項目解釋權歸 盟創團隊 所有。 
+```
