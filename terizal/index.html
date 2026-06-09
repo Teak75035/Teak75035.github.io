@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terizal 4K</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #141420;
+            --surface2: #1a1a2e;
+            --text: #e0e0e0;
+            --text2: #a0a0b8;
+            --accent: #ff6b9d;
+            --accent2: #6bc5ff;
+            --accent3: #5effa0;
+            --accent4: #ffd76b;
+            --danger: #ff4757;
+            --border: #2a2a40;
+            --track1: #ff5e7a;
+            --track2: #5ea3ff;
+            --track3: #5eff8a;
+            --track4: #ffe85e;
+            --gold: #ffd700;
+            --perfect: #ffdd57;
+            --great: #5eff8a;
+            --good: #5ea3ff;
+            --miss: #ff4757;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1100px;
+            background: var(--surface);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            margin: 16px;
+        }
+
+        .tab-bar {
+            display: flex;
+            background: var(--surface2);
+            border-bottom: 2px solid var(--border);
+            gap: 0;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 14px 24px;
+            background: transparent;
+            border: none;
+            color: var(--text2);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            background: var(--surface);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 20%;
+            right: 20%;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            gap: 16px;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        .game-layout {
+            display: flex;
+            gap: 16px;
+            align-items: stretch;
+            flex-wrap: wrap;
+        }
+
+        .game-canvas-wrap {
+            flex: 1;
+            min-width: 500px;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas#gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            min-height: 550px;
+            background: #050510;
+        }
+
+        .game-sidebar {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .info-panel {
+            background: var(--surface2);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .info-panel h3 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text2);
+            margin-bottom: 8px;
+        }
+
+        .score-display {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .combo-display {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-top: 4px;
+        }
+
+        .judge-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 8px;
+            font-size: 0.85rem;
+        }
+
+        .judge-stats span {
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.04);
+            text-align: center;
+        }
+
+        .stat-perfect {
+            color: var(--perfect);
+        }
+
+        .stat-great {
+            color: var(--great);
+        }
+
+        .stat-good {
+            color: var(--good);
+        }
+
+        .stat-miss {
+            color: var(--miss);
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface2);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+
+        .btn:hover {
+            background: #2a2a42;
+            border-color: #4a4a60;
+        }
+
+        .btn.primary {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            font-weight: 700;
+        }
+
+        .btn.primary:hover {
+            background: #ff8ab5;
+        }
+
+        .btn.danger {
+            background: transparent;
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .btn.danger:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .btn.small {
+            padding: 6px 10px;
+            font-size: 0.78rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .speed-indicator {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: var(--accent);
+            color: #000;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .keybind-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .keybind-row span {
+            width: 16px;
+            font-weight: 700;
+            color: var(--text2);
+        }
+
+        .keybind-btn {
+            padding: 4px 12px;
+            border-radius: 4px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.8rem;
+            min-width: 50px;
+            text-align: center;
+            transition: background 0.1s;
+        }
+
+        .keybind-btn:hover {
+            background: #2a2a42;
+        }
+
+        .keybind-btn.binding {
+            border-color: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+            animation: pulse 0.6s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                box-shadow: 0 0 4px var(--accent);
+            }
+
+            to {
+                box-shadow: 0 0 12px var(--accent);
+            }
+        }
+
+        input[type="number"] {
+            width: 70px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        input[type="text"] {
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            font-size: 0.9rem;
+            width: 150px;
+        }
+
+        select {
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            font-size: 0.85rem;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface2);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        #keybindContainer {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .keybind-row {
+            margin-bottom: 0;
+            /* 移除原有的下边距 */
+            align-items: center;
+        }
+
+        @media (max-width: 800px) {
+            .game-layout {
+                flex-direction: column;
+            }
+
+            .game-sidebar {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            .game-canvas-wrap {
+                min-width: auto;
+            }
+
+            canvas#gameCanvas {
+                min-height: 400px;
+            }
+
+            .tab-btn {
+                padding: 10px 14px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="game">PLAYER</button>
+            <button class="tab-btn" data-tab="editor">EDITOR</button>
+        </div>
+
+        <!-- 游戏视图 -->
+        <div class="tab-content active" id="tab-game">
+            <div class="game-layout">
+                <div class="game-canvas-wrap">
+                    <canvas id="gameCanvas"></canvas>
+                </div>
+                <div class="game-sidebar">
+                    <div class="info-panel">
+                        <h3>成绩 Scores</h3>
+
+                        <div class="score-display" id="scoreDisplay">
+                            0000000
+                        </div>
+
+                        <div id="accDisplay" style="
+                            margin-top:8px;
+                            color:var(--text2);
+                            font-size:0.9rem;
+                            line-height:1.5;
+                        ">
+                            ACC 100.00%<br>
+                            Max Combo 0
+                            All Perfect!
+                        </div>
+                    </div>
+                    <div class="info-panel">
+                        <h3>判定统计 Statistics</h3>
+                        <div class="judge-stats">
+                            <span class="stat-perfect">Perfect <b id="cntPerfect">0</b></span>
+                            <span class="stat-great">Great <b id="cntGreat">0</b></span>
+                            <span class="stat-good">Good <b id="cntGood">0</b></span>
+                            <span class="stat-miss">Miss <b id="cntMiss">0</b></span>
+                        </div>
+                    </div>
+                    <div class="info-panel">
+                        <h3>按键绑定 Key Binding</h3>
+                        <div id="keybindContainer">
+                            <div class="keybind-row"><span style="color:var(--track1)">D</span><button
+                                    class="keybind-btn" data-track="0">D</button></div>
+                            <div class="keybind-row"><span style="color:var(--track2)">F</span><button
+                                    class="keybind-btn" data-track="1">F</button></div>
+                            <div class="keybind-row"><span style="color:var(--track3)">J</span><button
+                                    class="keybind-btn" data-track="2">J</button></div>
+                            <div class="keybind-row"><span style="color:var(--track4)">K</span><button
+                                    class="keybind-btn" data-track="3">K</button></div>
+                        </div>
+                    </div>
+                    <div class="info-panel">
+                        <h3>音频延迟 (ms)</h3>
+                        <input type="number" id="audioDelayInput" value="0" step="1" min="-500" max="500"
+                            style="width:100%;">
+                    </div>
+                    <div class="info-panel">
+                        <h3>流速 Speed</h3>
+                        <div class="btn-group">
+                            <button class="btn small speed-btn" data-speed="0.75">0.75x</button>
+                            <button class="btn small speed-btn active-speed" data-speed="1">1x</button>
+                            <button class="btn small speed-btn" data-speed="1.5">1.5x</button>
+                            <button class="btn small speed-btn" data-speed="2">2x</button>
+                        </div>
+                        <span class="speed-indicator" id="speedIndicator"
+                            style="margin-top:6px;display:inline-block;">1x</span>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn primary" id="btnLoadChart">加载谱面</button>
+                        <button class="btn" id="btnLoadAudio">加载音频</button>
+                        <button class="btn" id="btnStartGame">▶ 开始游戏</button>
+                    </div>
+                    <div style="font-size:0.75rem;color:var(--text2);margin-top:4px;">
+                    </div>
+                    <input type="file" id="fileChartInput" accept=".json" style="display:none;">
+                    <input type="file" id="fileAudioInput" accept="audio/*" style="display:none;">
+                </div>
+            </div>
+        </div>
+
+        <!-- 制谱器视图 (保持不变，省略部分重复代码以节省空间，实际使用前文提供的完整版) -->
+        <div class="tab-content" id="tab-editor">
+            <!-- 制谱器界面保持不变，此处复用前文完整代码中的制谱器部分 -->
+            <div class="editor-toolbar">
+                <label>标题:</label>
+                <input type="text" id="editTitle" value="未命名谱面" placeholder="歌曲标题">
+                <label>艺术家:</label>
+                <input type="text" id="editArtist" value="Unknown" placeholder="艺术家">
+                <label>BPM:</label>
+                <input type="number" id="editBPM" value="120" min="20" max="400" step="1">
+                <label>偏移(ms):</label>
+                <input type="number" id="editOffset" value="0" step="1">
+                <label>吸附:</label>
+                <select id="editSnap">
+                    <option value="1">1/1 (全音符)</option>
+                    <option value="2">1/2</option>
+                    <option value="4" selected>1/4 (四分音符)</option>
+                    <option value="8">1/8</option>
+                    <option value="12">1/12 (三连音)</option>
+                    <option value="16">1/16</option>
+                    <option value="24">1/24</option>
+                    <option value="32">1/32</option>
+                </select>
+                <button class="btn small" id="btnEditorLoadAudio">🎵 加载音频</button>
+                <button class="btn small" id="btnEditorPlay">▶ 预览</button>
+                <button class="btn small" id="btnEditorStop">⏹ 停止</button>
+                <button class="btn primary small" id="btnExport">导出</button>
+                <button class="btn small" id="btnEditorLoad">导入</button>
+                <button class="btn danger small" id="btnClearNotes">清除音符</button>
+                <input type="file" id="fileEditorAudio" accept="audio/*" style="display:none;">
+                <input type="file" id="fileEditorChart" accept=".json" style="display:none;">
+                <!-- 新增进度指示器，方便查看当前播放位置 -->
+                <span style="margin-left:auto; color:var(--text2); font-size:0.8rem;" id="editorTimeDisplay">⏱
+                    0:00.000</span>
+            </div>
+            <div class="editor-canvas-wrap">
+                <canvas id="editorCanvas"></canvas>
+            </div>
+            <div class="editor-info">
+                <span>音符总数: <b class="note-count" id="editorNoteCount">0</b></span>
+                <span>时长: <b id="editorDuration">0:00</b></span>
+                <span>轨道: </span>
+                <span class="track-labels-mini">
+                    <span class="track-label-mini tl0">D</span>
+                    <span class="track-label-mini tl1">F</span>
+                    <span class="track-label-mini tl2">J</span>
+                    <span class="track-label-mini tl3">K</span>
+                </span>
+                <span style="color:var(--text2);font-size:0.7rem;">点击轨道添加音符 | 拖拽移动 | 右键删除 | 滚轮缩放 | 拖动红点/点击标尺跳转进度</span>
+            </div>
+        </div>
+    </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        (function () {
+            let activeTab = 'game';
+            let chartData = null;
+            let audioElement = null;
+            let audioSrc = null;
+            let audioDelay = 0;
+            const clickSound = new Audio('click.ogg');
+            clickSound.volume = 0.3;
+            let gameAP = true;
+            let gameFC = true;
+
+            let keyBindings = ['d', 'f', 'j', 'k'];
+            let bindingTrack = -1;
+
+            const DEFAULT_CHART = {
+                title: "示例谱面 - 4K Demo",
+                artist: "内置演示",
+                bpm: 120,
+                offset: 0,
+                notes: [
+                    { time: 500, track: 0 }, { time: 1000, track: 1 }, { time: 1500, track: 2 },
+                    { time: 2000, track: 3 },
+                    { time: 2500, track: 0 }, { time: 2750, track: 2 }, { time: 3000, track: 1 },
+                    { time: 3250, track: 3 },
+                    { time: 3500, track: 0 }, { time: 3500, track: 3 }, { time: 4000, track: 1 },
+                    { time: 4000, track: 2 },
+                    { time: 4500, track: 0 }, { time: 4750, track: 1 }, { time: 5000, track: 2 },
+                    { time: 5250, track: 3 },
+                    { time: 5500, track: 0 }, { time: 5500, track: 2 }, { time: 5750, track: 1 },
+                    { time: 6000, track: 3 },
+                    { time: 6250, track: 0 }, { time: 6500, track: 1 }, { time: 6750, track: 2 },
+                    { time: 7000, track: 3 },
+                    { time: 7500, track: 0 }, { time: 7500, track: 3 }, { time: 8000, track: 1 },
+                    { time: 8000, track: 2 },
+                    { time: 8500, track: 0 }, { time: 8750, track: 2 }, { time: 9000, track: 1 },
+                    { time: 9250, track: 3 },
+                    { time: 9500, track: 0 }, { time: 9500, track: 1 }, { time: 9500, track: 2 },
+                    { time: 9500, track: 3 },
+                ]
+            };
+
+            function showToast(msg) {
+                const t = document.getElementById('toast');
+                t.textContent = msg;
+                t.classList.add('show');
+                clearTimeout(t._timeout);
+                t._timeout = setTimeout(() => t.classList.remove('show'), 2000);
+            }
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    btn.classList.add('active');
+                    const tabId = btn.dataset.tab;
+                    document.getElementById('tab-' + tabId).classList.add('active');
+                    activeTab = tabId;
+                    if (tabId === 'editor') {
+                        requestAnimationFrame(() => resizeEditorCanvas());
+                        requestAnimationFrame(() => drawEditor());
+                    }
+                    if (tabId === 'game') {
+                        requestAnimationFrame(() => resizeGameCanvas());
+                    }
+                });
+            });
+
+            function createAudioFromFile(file) {
+                if (audioSrc) URL.revokeObjectURL(audioSrc);
+                audioSrc = URL.createObjectURL(file);
+                if (audioElement) {
+                    audioElement.pause();
+                    audioElement.src = '';
+                }
+                audioElement = new Audio(audioSrc);
+                audioElement.preload = 'auto';
+                return audioElement;
+            }
+
+            function getAudioTime() {
+                if (audioElement && audioElement.duration && !audioElement.paused) {
+                    return audioElement.currentTime * 1000 + audioDelay;
+                }
+                return null;
+            }
+
+            const SOUND_POOL_SIZE = 32;
+            const clickSoundPool = [];
+            for (let i = 0; i < SOUND_POOL_SIZE; i++) {
+                const audio = new Audio('click.ogg');
+                audio.volume = 0.5;
+                clickSoundPool.push(audio);
+            }
+            let soundPoolIndex = 0;
+
+            const gameCanvas = document.getElementById('gameCanvas');
+            const gameCtx = gameCanvas.getContext('2d');
+            let gameState = 'idle';
+            let gameStartTime = 0;
+            let gamePauseOffset = 0;
+            let gameSpeed = 1;
+            let gameScore = 0;
+            const MAX_SCORE = 1000000;
+            let scorePerNote = 0;
+            let gameCombo = 0;
+            let gameMaxCombo = 0;
+            let gameJudges = { perfect: 0, great: 0, good: 0, miss: 0 };
+            let gameNotes = [];
+            let gameParticles = [];
+            let gameKeyPressed = [false, false, false, false];
+            let gameKeyFlash = [0, 0, 0, 0];
+            let gameKeyFlashColor = ['#fff', '#fff', '#fff', '#fff'];
+            let gameJudgePopups = [];
+            const GAME_DROP_TIME = 2000;
+            const JUDGE_PERFECT = 40;
+            const JUDGE_GREAT = 75;
+            const JUDGE_GOOD = 120;
+            const JUDGE_MISS = 180;
+            const TRACK_COLORS = ['#ff5e7a', '#5ea3ff', '#5eff8a', '#ffe85e'];
+            const TRACK_COLORS_GLOW = ['rgba(255,94,122,0.8)', 'rgba(94,163,255,0.8)', 'rgba(94,255,138,0.8)', 'rgba(255,232,94,0.8)'];
+
+            function playClickSound() {
+                const audio = clickSoundPool[soundPoolIndex];
+                audio.currentTime = 0;
+                audio.play().catch(() => { });
+                soundPoolIndex = (soundPoolIndex + 1) % SOUND_POOL_SIZE;
+            }
+
+            function resetGameState() {
+                gameScore = 0;
+                gameCombo = 0;
+                gameMaxCombo = 0;
+                gameJudges = { perfect: 0, great: 0, good: 0, miss: 0 };
+                gameNotes = [];
+                gameParticles = [];
+                gameJudgePopups = [];
+                gameKeyFlash = [0, 0, 0, 0];
+                gameKeyPressed = [false, false, false, false];
+                gamePauseOffset = 0;
+                gameAP = true;
+                gameFC = true;
+                updateGameUI();
+            }
+
+            function initGameNotes() {
+                if (!chartData || !chartData.notes) {
+                    gameNotes = [];
+                    scorePerNote = 0;
+                    return;
+                }
+
+                gameNotes = chartData.notes.map((n, i) => ({
+                    id: i,
+                    time: n.time + (chartData.offset || 0),
+                    track: n.track,
+                    hit: false,
+                    missed: false,
+                    visible: false,
+                })).sort((a, b) => a.time - b.time);
+
+                scorePerNote = MAX_SCORE / gameNotes.length;
+            }
+            function getEffectiveDropTime() {
+                return GAME_DROP_TIME / gameSpeed;
+            }
+
+            function getGameTime() {
+                if (gameState === 'idle') return 0;
+                if (gameState === 'paused') return gamePauseOffset;
+                const audioTime = getAudioTime();
+                if (audioTime !== null) return audioTime;
+                return performance.now() - gameStartTime + gamePauseOffset;
+            }
+
+            function spawnParticles(x, y, color, count = 20) {
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 2 + Math.random() * 8;
+                    gameParticles.push({
+                        x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 3,
+                        life: 0.4 + Math.random() * 0.6, maxLife: 0.4 + Math.random() * 0.6,
+                        color, size: 1.5 + Math.random() * 3,
+                    });
+                }
+            }
+
+            function addJudgePopup(x, y, text, color) {
+                gameJudgePopups.push({ x, y, text, color, life: 1.2, maxLife: 1.2 });
+            }
+
+            function handleKeyPress(trackIndex) {
+                if (gameState !== 'playing') return;
+                const gameTime = getGameTime();
+                let bestNote = null;
+                let bestDiff = Infinity;
+                for (const note of gameNotes) {
+                    if (note.track !== trackIndex || note.hit || note.missed) continue;
+                    const diff = Math.abs(note.time - gameTime);
+                    if (diff < JUDGE_MISS && diff < bestDiff) {
+                        bestDiff = diff;
+                        bestNote = note;
+                    }
+                }
+
+                gameKeyFlash[trackIndex] = 0.2;
+                gameKeyFlashColor[trackIndex] = '#ffffff';
+
+                if (bestNote) {
+                    bestNote.hit = true;
+                    const diff = bestNote.time - gameTime;
+                    const absDiff = Math.abs(diff);
+                    let judge = 'miss';
+                    let points = 0;
+                    let judgeColor = '#ff4757';
+                    let scoreRatio = 0;
+
+                    if (absDiff <= JUDGE_PERFECT) {
+                        judge = 'perfect';
+                        scoreRatio = 1.0;
+                        judgeColor = '#ffdd57';
+                        gameJudges.perfect++;
+                    }
+                    else if (absDiff <= JUDGE_GREAT) {
+                        judge = 'great';
+                        scoreRatio = 0.8;
+                        judgeColor = '#5eff8a';
+                        gameJudges.great++;
+                        gameAP = false;
+                    }
+                    else if (absDiff <= JUDGE_GOOD) {
+                        judge = 'good';
+                        scoreRatio = 0.5;
+                        judgeColor = '#5ea3ff';
+                        gameJudges.good++;
+                        gameCombo = 0;
+                        gameAP = false;
+                        gameFC = false;
+                    }
+                    else {
+                        judge = 'miss';
+                        scoreRatio = 0;
+                        gameJudges.miss++;
+                        bestNote.missed = true;
+                        bestNote.hit = false;
+                        gameCombo = 0;
+                        gameAP = false;
+                        gameFC = false;
+                    }
+
+                    gameKeyFlash[trackIndex] = 0.25;
+                    gameKeyFlashColor[trackIndex] = judgeColor;
+
+                    if (judge !== 'miss' && judge !== 'good') {
+                        gameCombo++;
+                    } else if (judge === 'good') {
+                    }
+
+                    if (judge !== 'miss') {
+                        if (gameCombo > gameMaxCombo) gameMaxCombo = gameCombo;
+                        gameScore += scorePerNote * scoreRatio;
+                        gameScore = Math.round(gameScore);
+                        clickSound.currentTime = 0;
+                        playClickSound()
+                    }
+
+                    const canvasH = gameCanvas.height;
+                    const judgeY = canvasH - 110;
+                    const trackX = getTrackX(trackIndex, gameCanvas.width);
+                    spawnParticles(trackX, judgeY, judgeColor, judge === 'perfect' ? 35 : (judge === 'great' ? 20 : 10));
+                    addJudgePopup(trackX, judgeY - 50, judge.toUpperCase(), judgeColor);
+                } else {
+                    gameKeyFlash[trackIndex] = 0.25;
+                    gameKeyFlashColor[trackIndex] = '#ffffff';
+                }
+                updateGameUI();
+            }
+
+            function getTrackX(track, canvasWidth) {
+                const totalTrackWidth = canvasWidth * 0.7;
+                const trackWidth = totalTrackWidth / 4;
+                const startX = (canvasWidth - totalTrackWidth) / 2;
+                return startX + track * trackWidth + trackWidth / 2;
+            }
+
+            function getTrackBounds(canvasWidth) {
+                const totalTrackWidth = canvasWidth * 0.7;
+                const trackWidth = totalTrackWidth / 4;
+                const startX = (canvasWidth - totalTrackWidth) / 2;
+                const bounds = [];
+                for (let i = 0; i < 4; i++) {
+                    bounds.push({ left: startX + i * trackWidth, right: startX + (i + 1) * trackWidth, width: trackWidth, cx: startX + i * trackWidth + trackWidth / 2 });
+                }
+                return bounds;
+            }
+
+            function updateGameUI() {
+
+                const total =
+                    gameJudges.perfect +
+                    gameJudges.great +
+                    gameJudges.good +
+                    gameJudges.miss;
+
+                const acc =
+                    total > 0
+                        ?
+                        (
+                            (
+                                gameJudges.perfect * 1.0 +
+                                gameJudges.great * 0.8 +
+                                gameJudges.good * 0.5
+                            )
+                            /
+                            total
+                            *
+                            100
+                        )
+                        : 100;
+
+                const accDiv =
+                    document.getElementById('accDisplay');
+                let statusText = '';
+                let statusColor = '#ffffff';
+
+                if (gameAP) {
+                    statusText = 'All Perfect!';
+                    statusColor = '#ffd700';
+                }
+                else if (gameFC) {
+                    statusText = 'Full Combo!';
+                    statusColor = '#5eff8a';
+                }
+                else {
+                    statusText = '';
+                    statusColor = '#ffffff';
+                }
+                accDiv.innerHTML =
+                    `
+                ACC ${acc.toFixed(2)}%<br>
+                Max Combo ${gameMaxCombo}<br>
+                ${statusText}
+                `;
+
+
+
+                document.getElementById('scoreDisplay').style.color =
+                    statusColor;
+
+                document.getElementById('scoreDisplay').textContent =
+                    Math.floor(gameScore)
+                        .toString()
+                        .padStart(7, '0');
+
+                document.getElementById('accDisplay').innerHTML =
+                    `ACC ${acc.toFixed(2)}%<br>MAX ${gameMaxCombo}`;
+
+                document.getElementById('cntPerfect').textContent =
+                    gameJudges.perfect;
+
+                document.getElementById('cntGreat').textContent =
+                    gameJudges.great;
+
+                document.getElementById('cntGood').textContent =
+                    gameJudges.good;
+
+                document.getElementById('cntMiss').textContent =
+                    gameJudges.miss;
+
+                document.getElementById('speedIndicator').textContent =
+                    gameSpeed + 'x';
+            }
+
+            function drawGame(timestamp) {
+                if (activeTab !== 'game') { requestAnimationFrame(drawGame); return; }
+                const canvas = gameCanvas;
+                const ctx = gameCtx;
+                const w = canvas.width;
+                const h = canvas.height;
+                ctx.clearRect(0, 0, w, h);
+                const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+                bgGrad.addColorStop(0, '#050510');
+                bgGrad.addColorStop(1, '#0a0a1e');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, w, h);
+                const bounds = getTrackBounds(w);
+                const judgeY = h - 110;
+                const dropTime = getEffectiveDropTime();
+                const dropDistance = judgeY - 80;
+                const gameTime = gameState === 'playing' ? getGameTime() : (gameState === 'paused' ? gamePauseOffset : 0);
+
+                for (let i = 0; i < 4; i++) {
+                    const b = bounds[i];
+                    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+                    ctx.fillRect(b.left, 60, b.width, h - 160);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(b.left, 60, b.width, h - 160);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+                    ctx.setLineDash([4, 16]);
+                    ctx.beginPath(); ctx.moveTo(b.cx, 70); ctx.lineTo(b.cx, judgeY); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = TRACK_COLORS[i];
+                    ctx.font = 'bold 13px "Segoe UI","PingFang SC",sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(keyBindings[i].toUpperCase(), b.cx, 48);
+                }
+
+                const glowGrad = ctx.createLinearGradient(0, judgeY - 4, 0, judgeY + 4);
+                glowGrad.addColorStop(0, 'rgba(255,255,255,0)');
+                glowGrad.addColorStop(0.5, 'rgba(255,255,255,0.9)');
+                glowGrad.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.strokeStyle = glowGrad; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(bounds[0].left - 10, judgeY); ctx.lineTo(bounds[3].right + 10, judgeY); ctx.stroke();
+
+                if (gameState === 'playing' || gameState === 'paused') {
+                    for (const note of gameNotes) {
+                        if (note.hit || note.missed) continue;
+                        const timeUntilHit = note.time - gameTime;
+                        if (timeUntilHit < -JUDGE_MISS && !note.missed) {
+                            note.missed = true; gameCombo = 0; gameJudges.miss++;
+                            gameAP = false;
+                            gameFC = false;
+                            updateGameUI();
+                            addJudgePopup(getTrackX(note.track, w), judgeY - 10, 'MISS', '#ff4757');
+                            continue;
+                        }
+                        if (timeUntilHit > dropTime || timeUntilHit < -JUDGE_MISS) { note.visible = false; continue; }
+                        note.visible = true;
+                        const progress = timeUntilHit / dropTime;
+                        const noteY = judgeY - progress * dropDistance;
+                        const noteX = bounds[note.track].cx;
+                        const noteW = bounds[note.track].width * 0.75;
+                        const noteH = 18;
+                        const alpha = 0.3 + 0.7 * (1 - progress);
+                        ctx.shadowColor = TRACK_COLORS_GLOW[note.track]; ctx.shadowBlur = 12 * alpha;
+                        const noteGrad = ctx.createLinearGradient(noteX - noteW / 2, noteY - noteH / 2, noteX + noteW / 2, noteY + noteH / 2);
+                        noteGrad.addColorStop(0, TRACK_COLORS[note.track]);
+                        noteGrad.addColorStop(1, 'rgba(255,255,255,0.8)');
+                        ctx.fillStyle = noteGrad;
+                        ctx.beginPath(); ctx.roundRect(noteX - noteW / 2, noteY - noteH / 2, noteW, noteH, 8); ctx.fill();
+                        ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+                        ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.lineWidth = 1;
+                    }
+                }
+
+                for (let i = 0; i < 4; i++) {
+                    if (gameKeyFlash[i] > 0) {
+                        const alpha = gameKeyFlash[i] / 0.25;
+                        const color = gameKeyFlashColor[i];
+                        const b = bounds[i];
+                        ctx.fillStyle = color.replace(')', `,${alpha})`).replace('rgb', 'rgba');
+                        if (color.startsWith('#')) {
+                            ctx.fillStyle = color;
+                            ctx.globalAlpha = alpha * 0.4;
+                        }
+                        ctx.fillRect(b.left, judgeY - 40, b.width, 80);
+                        ctx.globalAlpha = 1;
+                        gameKeyFlash[i] -= 0.016;
+                        if (gameKeyFlash[i] < 0) gameKeyFlash[i] = 0;
+                    }
+                }
+
+
+                for (let i = gameParticles.length - 1; i >= 0; i--) {
+                    const p = gameParticles[i]; p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.life -= 0.016;
+                    if (p.life <= 0) { gameParticles.splice(i, 1); continue; }
+                    const alpha = p.life / p.maxLife;
+                    ctx.fillStyle = p.color.replace(')', `,${alpha})`).replace('rgb', 'rgba');
+                    if (p.color.startsWith('#')) { ctx.fillStyle = p.color; ctx.globalAlpha = alpha; }
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2); ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+                for (let i = gameJudgePopups.length - 1; i >= 0; i--) {
+                    const pop = gameJudgePopups[i]; pop.y -= 2.5; pop.life -= 0.016;
+                    if (pop.life <= 0) { gameJudgePopups.splice(i, 1); continue; }
+                    const alpha = pop.life / pop.maxLife;
+                    ctx.fillStyle = pop.color; ctx.globalAlpha = alpha;
+                    ctx.font = 'bold 18px "Segoe UI","PingFang SC",sans-serif'; ctx.textAlign = 'center';
+                    ctx.fillText(pop.text, pop.x, pop.y); ctx.globalAlpha = 1;
+                }
+
+                if (gameState === 'paused') {
+                    ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0, 0, w, h);
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold 32px "Segoe UI","PingFang SC",sans-serif'; ctx.textAlign = 'center';
+                    ctx.fillText('⏸ 已暂停', w / 2, h / 2);
+                } else if (gameState === 'idle') {
+                    ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0, 0, w, h);
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold 28px "Segoe UI","PingFang SC",sans-serif'; ctx.textAlign = 'center';
+                    ctx.fillText('加载谱面后点击"开始游戏"', w / 2, h / 2);
+                }
+
+                if (gameCombo >= 3 && (gameState === 'playing' || gameState === 'paused')) {
+                    ctx.save();
+                    ctx.font = 'bold 40px "Segoe UI","PingFang SC",sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+
+                    let comboColor1, comboColor2;
+                    if (gameCombo >= 100) {
+                        comboColor1 = '#ffd700';
+                        comboColor2 = '#ffaa00';
+                    } else if (gameCombo >= 50) {
+                        comboColor1 = '#ff9f43';
+                        comboColor2 = '#ff6b9d';
+                    } else {
+                        comboColor1 = '#ff6b9d';
+                        comboColor2 = '#ffdd57';
+                    }
+
+                    const gradient = ctx.createLinearGradient(w / 2 - 120, h / 2 - 60, w / 2 + 120, h / 2 - 20);
+                    gradient.addColorStop(0, comboColor1);
+                    gradient.addColorStop(1, comboColor2);
+                    ctx.fillStyle = gradient;
+
+                    ctx.shadowColor = comboColor1;
+                    ctx.shadowBlur = 25;
+                    ctx.fillText(gameCombo + ' COMBO', w / 2, h / 2 - 60);
+                    ctx.shadowBlur = 0;
+                    ctx.restore();
+                }
+
+                if ((gameState === 'playing' || gameState === 'paused') && gameNotes.length > 0) {
+                    const lastNoteTime = gameNotes[gameNotes.length - 1].time;
+                    const progress = Math.min(gameTime / Math.max(lastNoteTime, 1), 1);
+                    const progY = h - 18;
+                    ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(30, progY, w - 60, 6);
+                    ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillRect(30, progY, (w - 60) * progress, 6);
+                }
+                if (gameState === 'playing' && gameNotes.length > 0) {
+                    const allDone = gameNotes.every(n => n.hit || n.missed);
+                    if (allDone && getGameTime() > gameNotes[gameNotes.length - 1].time + 1500) endGame();
+                }
+                requestAnimationFrame(drawGame);
+            }
+
+            function endGame() {
+                gameState = 'idle';
+                if (audioElement) audioElement.pause();
+                const total = gameJudges.perfect + gameJudges.great + gameJudges.good + gameJudges.miss;
+                const acc = (gameJudges.perfect * 1.0 + gameJudges.great * 0.8 + gameJudges.good * 0.5) / total * 100;
+                showToast(`🏆 游戏结束! 分数: ${gameScore} | 最大连击: ${gameMaxCombo} | 精度: ${acc.toFixed(1)}%`);
+                updateGameUI();
+            }
+
+            function startGame() {
+                if (!chartData || !chartData.notes || chartData.notes.length === 0) { showToast('⚠ 请先加载谱面!'); return; }
+                resetGameState(); initGameNotes();
+                audioDelay = parseInt(document.getElementById('audioDelayInput').value) || 0;
+                gameState = 'playing'; gameStartTime = performance.now(); gamePauseOffset = 0;
+                if (audioElement) { audioElement.currentTime = 0; audioElement.play().catch(() => { }); }
+                updateGameUI(); showToast('🎮 游戏开始! 按键: ' + keyBindings.map(k => k.toUpperCase()).join(' '));
+            }
+
+            function togglePause() {
+                if (gameState === 'playing') {
+                    gameState = 'paused'; gamePauseOffset = getGameTime();
+                    if (audioElement) audioElement.pause(); showToast('⏸ 已暂停');
+                } else if (gameState === 'paused') {
+                    gameState = 'playing'; gameStartTime = performance.now();
+                    if (audioElement) { audioElement.currentTime = gamePauseOffset / 1000; audioElement.play().catch(() => { }); }
+                    showToast('▶ 继续');
+                }
+            }
+
+            function resizeGameCanvas() {
+                const wrap = gameCanvas.parentElement;
+                const rect = wrap.getBoundingClientRect();
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                const w = rect.width, h = Math.max(550, Math.min(700, window.innerHeight * 0.7));
+                gameCanvas.width = w * dpr; gameCanvas.height = h * dpr;
+                gameCanvas.style.width = w + 'px'; gameCanvas.style.height = h + 'px';
+                gameCtx.setTransform(1, 0, 0, 1, 0, 0); gameCtx.scale(dpr, dpr);
+            }
+
+            const editorCanvas = document.getElementById('editorCanvas');
+            const editorCtx = editorCanvas.getContext('2d');
+            let editorNotes = [];
+            let editorBPM = 120;
+            let editorOffset = 0;
+            let editorSnap = 4;
+            let editorZoom = 0.08;
+            let editorScrollX = 0;
+            let editorAudio = null;
+            let editorAudioSrc = null;
+            let editorPlaying = false;
+            let editorPlayStart = 0;
+            let editorPlayOffset = 0;
+            let editorSelectedNote = null;
+            let editorDragging = false;
+            let editorDragStartTime = 0;
+            let editorDragStartMouseX = 0;
+            let editorMiddleDragging = false;
+            let editorMiddleStartX = 0;
+            let editorMiddleStartScroll = 0;
+            let editorDraggingPlayhead = false;
+            let editorLastFrameTime = 0;
+            let editorPlayedNotes = new Set();
+            const EDITOR_TRACK_HEIGHT = 70;
+            const EDITOR_MARGIN_LEFT = 50;
+            const EDITOR_MARGIN_TOP = 35;
+
+            function initEditorNotes() {
+                if (chartData && chartData.notes) {
+                    editorNotes = chartData.notes.map(n => ({ time: n.time, track: n.track }));
+                    editorBPM = chartData.bpm || 120;
+                    editorOffset = chartData.offset || 0;
+                    document.getElementById('editTitle').value = chartData.title || '未命名谱面';
+                    document.getElementById('editArtist').value = chartData.artist || 'Unknown';
+                } else {
+                    editorNotes = [];
+                }
+                document.getElementById('editBPM').value = editorBPM;
+                document.getElementById('editOffset').value = editorOffset;
+                document.getElementById('editSnap').value = editorSnap;
+                editorSelectedNote = null;
+                editorPlayOffset = 0;
+                updateEditorInfo();
+            }
+
+            function updateEditorInfo() {
+                document.getElementById('editorNoteCount').textContent = editorNotes.length;
+                const maxTime = editorNotes.length > 0 ? Math.max(...editorNotes.map(n => n.time)) : 0;
+                const totalSec = Math.floor(maxTime / 1000);
+                document.getElementById('editorDuration').textContent = Math.floor(totalSec / 60) + ':' + String(totalSec % 60).padStart(2, '0');
+                updateEditorTimeDisplay();
+            }
+
+            function updateEditorTimeDisplay() {
+                const t = editorPlaying ? getEditorPlayTime() : editorPlayOffset;
+                const sec = Math.floor(t / 1000);
+                const ms = Math.floor(t % 1000);
+                document.getElementById('editorTimeDisplay').textContent = `⏱ ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
+            }
+
+            function getSnapInterval() { return (60000 / editorBPM) / editorSnap; }
+            function snapTime(time) { const snap = getSnapInterval(); return Math.round(time / snap) * snap; }
+            function editorTimeToX(time) { return EDITOR_MARGIN_LEFT + (time - editorScrollX) * editorZoom; }
+            function editorXToTime(x) { return editorScrollX + (x - EDITOR_MARGIN_LEFT) / editorZoom; }
+            function getEditorTrackY(track) { return EDITOR_MARGIN_TOP + track * EDITOR_TRACK_HEIGHT; }
+
+            function getEditorNoteRect(note) {
+                const x = editorTimeToX(note.time);
+                const y = getEditorTrackY(note.track) + 8;
+                const w = Math.max(12, editorZoom * 40);
+                const h = EDITOR_TRACK_HEIGHT - 16;
+                return { x: x - w / 2, y, w, h, cx: x, cy: y + h / 2 };
+            }
+
+            function findEditorNoteAt(mx, my) {
+                for (let i = editorNotes.length - 1; i >= 0; i--) {
+                    const r = getEditorNoteRect(editorNotes[i]);
+                    if (mx >= r.x - 4 && mx <= r.x + r.w + 4 && my >= r.y - 4 && my <= r.y + r.h + 4) return { index: i, note: editorNotes[i], rect: r };
+                }
+                return null;
+            }
+
+            function getEditorPlayTime() {
+                if (!editorPlaying) return editorPlayOffset;
+                if (editorAudio && editorAudio.duration && !editorAudio.paused) return editorAudio.currentTime * 1000;
+                return performance.now() - editorPlayStart + editorPlayOffset;
+            }
+
+            function startEditorPlayback() {
+                if (editorPlaying) return;
+                editorPlaying = true;
+                editorLastFrameTime = editorPlayOffset;
+                editorPlayedNotes.clear();
+                editorPlayStart = performance.now();
+                if (editorAudio) {
+                    editorAudio.currentTime = editorPlayOffset / 1000;
+                    editorAudio.play().catch(() => { });
+                }
+            }
+
+            function stopEditorPlayback() {
+                if (!editorPlaying) return;
+                editorPlaying = false;
+                if (editorAudio) editorAudio.pause();
+                editorPlayOffset = getEditorPlayTime();
+                editorPlayedNotes.clear();
+                updateEditorTimeDisplay();
+            }
+
+            function drawEditor() {
+                if (activeTab !== 'editor') { requestAnimationFrame(drawEditor); return; }
+                const canvas = editorCanvas;
+                const ctx = editorCtx;
+                const w = canvas.width;
+                const h = canvas.height;
+                ctx.clearRect(0, 0, w, h);
+                ctx.fillStyle = '#0a0a16'; ctx.fillRect(0, 0, w, h);
+
+                const snap = getSnapInterval();
+                const viewStart = editorScrollX;
+                const viewEnd = editorScrollX + (w - EDITOR_MARGIN_LEFT) / editorZoom;
+                const gridStart = Math.floor(viewStart / snap) * snap;
+                for (let t = gridStart; t <= viewEnd; t += snap) {
+                    const x = editorTimeToX(t);
+                    if (x < EDITOR_MARGIN_LEFT || x > w) continue;
+                    const beatMs = 60000 / editorBPM;
+                    const isBeat = Math.abs(t % beatMs) < snap / 2 || Math.abs((t % beatMs) - beatMs) < snap / 2;
+                    ctx.strokeStyle = isBeat ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)';
+                    ctx.lineWidth = isBeat ? 1.5 : 0.8;
+                    ctx.beginPath(); ctx.moveTo(x, EDITOR_MARGIN_TOP); ctx.lineTo(x, h - 10); ctx.stroke();
+                }
+
+                for (let i = 0; i < 4; i++) {
+                    const y = getEditorTrackY(i);
+                    ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'rgba(255,255,255,0.03)';
+                    ctx.fillRect(EDITOR_MARGIN_LEFT, y, w - EDITOR_MARGIN_LEFT, EDITOR_TRACK_HEIGHT);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+                    ctx.strokeRect(EDITOR_MARGIN_LEFT, y, w - EDITOR_MARGIN_LEFT, EDITOR_TRACK_HEIGHT);
+                    ctx.fillStyle = TRACK_COLORS[i];
+                    ctx.font = 'bold 12px "Segoe UI","PingFang SC",sans-serif'; ctx.textAlign = 'right';
+                    ctx.fillText(['D', 'F', 'J', 'K'][i], EDITOR_MARGIN_LEFT - 8, y + EDITOR_TRACK_HEIGHT / 2 + 4);
+                }
+
+                const beatMs = 60000 / editorBPM;
+                ctx.fillStyle = '#888'; ctx.font = '10px "Segoe UI","PingFang SC",sans-serif'; ctx.textAlign = 'center';
+                for (let t = gridStart; t <= viewEnd; t += beatMs) {
+                    const x = editorTimeToX(t);
+                    if (x < EDITOR_MARGIN_LEFT || x > w) continue;
+                    const sec = Math.floor(t / 1000);
+                    ctx.fillText(`${sec}.${String(Math.floor((t % 1000) / 100)).padStart(1, '0')}"`, x, EDITOR_MARGIN_TOP - 6);
+                }
+
+                for (let i = 0; i < editorNotes.length; i++) {
+                    const note = editorNotes[i];
+                    const r = getEditorNoteRect(note);
+                    if (editorSelectedNote === i) { ctx.shadowColor = '#fff'; ctx.shadowBlur = 14; }
+                    const grad = ctx.createLinearGradient(r.x, r.y, r.x + r.w, r.y + r.h);
+                    grad.addColorStop(0, TRACK_COLORS[note.track]);
+                    grad.addColorStop(1, 'rgba(255,255,255,0.7)');
+                    ctx.fillStyle = grad;
+                    ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 5); ctx.fill();
+                    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+                    ctx.strokeStyle = (editorSelectedNote === i) ? '#fff' : 'rgba(255,255,255,0.5)';
+                    ctx.lineWidth = (editorSelectedNote === i) ? 2.5 : 1; ctx.stroke(); ctx.lineWidth = 1;
+                }
+
+                const playheadTime = editorPlaying ? getEditorPlayTime() : editorPlayOffset;
+                const px = editorTimeToX(playheadTime);
+                if (px >= EDITOR_MARGIN_LEFT && px <= w) {
+                    ctx.strokeStyle = '#ff4757'; ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 3]);
+                    ctx.beginPath(); ctx.moveTo(px, EDITOR_MARGIN_TOP); ctx.lineTo(px, h - 10); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#ff4757';
+                    ctx.beginPath(); ctx.arc(px, EDITOR_MARGIN_TOP, 6, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.arc(px, EDITOR_MARGIN_TOP, 6, 0, Math.PI * 2); ctx.stroke();
+                }
+
+                ctx.fillStyle = '#666'; ctx.font = '10px "Segoe UI","PingFang SC",sans-serif'; ctx.textAlign = 'left';
+                ctx.fillText(`缩放: ${(editorZoom * 1000).toFixed(1)}px/s | 吸附: 1/${editorSnap} | BPM: ${editorBPM}`, 10, h - 5);
+                updateEditorTimeDisplay();
+                requestAnimationFrame(drawEditor);
+            }
+
+            function resizeEditorCanvas() {
+                const wrap = editorCanvas.parentElement;
+                const rect = wrap.getBoundingClientRect();
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                const w = rect.width, h = 400;
+                editorCanvas.width = w * dpr; editorCanvas.height = h * dpr;
+                editorCanvas.style.width = w + 'px'; editorCanvas.style.height = h + 'px';
+                editorCtx.setTransform(1, 0, 0, 1, 0, 0); editorCtx.scale(dpr, dpr);
+            }
+
+            function exportChart() {
+                const title = document.getElementById('editTitle').value || '未命名谱面';
+                const artist = document.getElementById('editArtist').value || 'Unknown';
+                const bpm = parseInt(document.getElementById('editBPM').value) || 120;
+                const offset = parseInt(document.getElementById('editOffset').value) || 0;
+                const sorted = [...editorNotes].sort((a, b) => a.time - b.time);
+                const blob = new Blob([JSON.stringify({ title, artist, bpm, offset, notes: sorted }, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = (title.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_') || 'chart') + '.json'; a.click();
+                URL.revokeObjectURL(url); showToast('✅ 谱面已导出!');
+            }
+
+            function loadChartToEditor(jsonStr) {
+                try {
+                    const data = JSON.parse(jsonStr);
+                    if (!data.notes || !Array.isArray(data.notes)) throw new Error('无效谱面格式');
+                    chartData = data;
+                    editorNotes = data.notes.map(n => ({ time: n.time, track: n.track }));
+                    editorBPM = data.bpm || 120; editorOffset = data.offset || 0;
+                    document.getElementById('editTitle').value = data.title || '未命名谱面';
+                    document.getElementById('editArtist').value = data.artist || 'Unknown';
+                    document.getElementById('editBPM').value = editorBPM;
+                    document.getElementById('editOffset').value = editorOffset;
+                    editorSelectedNote = null; editorPlayOffset = 0; editorScrollX = 0;
+                    updateEditorInfo(); showToast('📂 谱面已加载到制谱器!');
+                } catch (e) { showToast('❌ 谱面解析失败: ' + e.message); }
+            }
+
+            editorCanvas.addEventListener('mousedown', (e) => {
+                if (editorPlaying) stopEditorPlayback();
+                const rect = editorCanvas.getBoundingClientRect();
+                const dpr = editorCanvas.width / rect.width;
+                const cx = (e.clientX - rect.left) * dpr;
+                const cy = (e.clientY - rect.top) * dpr;
+
+                const playheadTime = editorPlayOffset;
+                const playheadX = editorTimeToX(playheadTime);
+                if (Math.abs(cx - playheadX) < 12 && cy >= EDITOR_MARGIN_TOP - 8 && cy <= EDITOR_MARGIN_TOP + 12) {
+                    editorDraggingPlayhead = true;
+                    editorCanvas.style.cursor = 'ew-resize';
+                    return;
+                }
+
+                if (cy < EDITOR_MARGIN_TOP && cx >= EDITOR_MARGIN_LEFT) {
+                    const time = Math.max(0, editorXToTime(cx));
+                    editorPlayOffset = time;
+                    updateEditorTimeDisplay();
+                    return;
+                }
+
+                if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
+                    editorMiddleDragging = true;
+                    editorMiddleStartX = cx;
+                    editorMiddleStartScroll = editorScrollX;
+                    editorCanvas.style.cursor = 'grabbing';
+                    return;
+                }
+                if (e.button === 2) {
+                    const found = findEditorNoteAt(cx, cy);
+                    if (found) {
+                        editorNotes.splice(found.index, 1);
+                        if (editorSelectedNote === found.index) editorSelectedNote = null;
+                        else if (editorSelectedNote > found.index) editorSelectedNote--;
+                        updateEditorInfo();
+                    }
+                    return;
+                }
+                if (e.button === 0) {
+                    const found = findEditorNoteAt(cx, cy);
+                    if (found) {
+                        editorSelectedNote = found.index;
+                        editorDragging = true;
+                        editorDragStartTime = found.note.time;
+                        editorDragStartMouseX = cx;
+                        editorCanvas.style.cursor = 'ew-resize';
+                    } else {
+                        const time = snapTime(Math.max(0, editorXToTime(cx)));
+                        const track = Math.floor((cy - EDITOR_MARGIN_TOP) / EDITOR_TRACK_HEIGHT);
+                        if (track >= 0 && track < 4 && cx >= EDITOR_MARGIN_LEFT) {
+                            editorNotes.push({ time, track });
+                            editorSelectedNote = editorNotes.length - 1;
+                            updateEditorInfo();
+                        } else {
+                            editorSelectedNote = null;
+                        }
+                    }
+                }
+            });
+
+            editorCanvas.addEventListener('mousemove', (e) => {
+                const rect = editorCanvas.getBoundingClientRect();
+                const dpr = editorCanvas.width / rect.width;
+                const cx = (e.clientX - rect.left) * dpr;
+                const cy = (e.clientY - rect.top) * dpr;
+
+                if (editorDraggingPlayhead) {
+                    const time = Math.max(0, editorXToTime(cx));
+                    editorPlayOffset = time;
+                    updateEditorTimeDisplay();
+                    return;
+                }
+                if (editorMiddleDragging) {
+                    const dx = cx - editorMiddleStartX;
+                    editorScrollX = Math.max(0, editorMiddleStartScroll - dx / editorZoom);
+                    return;
+                }
+                if (editorDragging && editorSelectedNote !== null) {
+                    const dx = cx - editorDragStartMouseX;
+                    const newTime = snapTime(Math.max(0, editorDragStartTime + dx / editorZoom));
+                    editorNotes[editorSelectedNote].time = newTime;
+                    updateEditorInfo();
+                    return;
+                }
+                const playheadX = editorTimeToX(editorPlayOffset);
+                if (Math.abs(cx - playheadX) < 12 && cy >= EDITOR_MARGIN_TOP - 8 && cy <= EDITOR_MARGIN_TOP + 12) {
+                    editorCanvas.style.cursor = 'ew-resize';
+                } else if (cy < EDITOR_MARGIN_TOP && cx >= EDITOR_MARGIN_LEFT) {
+                    editorCanvas.style.cursor = 'pointer';
+                } else {
+                    const found = findEditorNoteAt(cx, cy);
+                    editorCanvas.style.cursor = found ? 'pointer' : 'crosshair';
+                }
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (editorDraggingPlayhead) {
+                    editorDraggingPlayhead = false;
+                    editorCanvas.style.cursor = 'crosshair';
+                }
+                if (editorDragging) {
+                    editorDragging = false;
+                    editorCanvas.style.cursor = 'crosshair';
+                    updateEditorInfo();
+                }
+                if (editorMiddleDragging) {
+                    editorMiddleDragging = false;
+                    editorCanvas.style.cursor = 'crosshair';
+                }
+            });
+
+            editorCanvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                if (e.ctrlKey || e.metaKey) {
+                    const rect = editorCanvas.getBoundingClientRect();
+                    const dpr = editorCanvas.width / rect.width;
+                    const mx = (e.clientX - rect.left) * dpr;
+                    const timeAtCursor = editorXToTime(mx);
+                    const zoomFactor = e.deltaY < 0 ? 1.2 : 0.8;
+                    editorZoom = Math.max(0.005, Math.min(2, editorZoom * zoomFactor));
+                    editorScrollX = Math.max(0, timeAtCursor - (mx - EDITOR_MARGIN_LEFT) / editorZoom);
+                } else {
+                    editorScrollX = Math.max(0, editorScrollX + e.deltaY / editorZoom);
+                }
+            });
+
+            editorCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+            document.getElementById('btnEditorPlay').addEventListener('click', startEditorPlayback);
+            document.getElementById('btnEditorStop').addEventListener('click', stopEditorPlayback);
+            document.getElementById('btnExport').addEventListener('click', exportChart);
+            document.getElementById('btnClearNotes').addEventListener('click', () => {
+                if (confirm('确定要清除所有音符吗？')) { editorNotes = []; editorSelectedNote = null; updateEditorInfo(); showToast('🗑 音符已清除'); }
+            });
+            document.getElementById('btnEditorLoadAudio').addEventListener('click', () => document.getElementById('fileEditorAudio').click());
+            document.getElementById('btnEditorLoad').addEventListener('click', () => document.getElementById('fileEditorChart').click());
+            document.getElementById('fileEditorAudio').addEventListener('change', (e) => {
+                const file = e.target.files[0]; if (!file) return;
+                if (editorAudioSrc) URL.revokeObjectURL(editorAudioSrc);
+                editorAudioSrc = URL.createObjectURL(file);
+                if (editorAudio) { editorAudio.pause(); editorAudio.src = ''; }
+                editorAudio = new Audio(editorAudioSrc); editorAudio.preload = 'auto';
+                showToast('🎵 音频已加载'); e.target.value = '';
+            });
+            document.getElementById('fileEditorChart').addEventListener('change', (e) => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => loadChartToEditor(reader.result);
+                reader.readAsText(file); e.target.value = '';
+            });
+            document.getElementById('editBPM').addEventListener('change', function () { editorBPM = parseInt(this.value) || 120; updateEditorInfo(); });
+            document.getElementById('editOffset').addEventListener('change', function () { editorOffset = parseInt(this.value) || 0; });
+            document.getElementById('editSnap').addEventListener('change', function () { editorSnap = parseInt(this.value) || 4; });
+
+            function editorPlayLoop() {
+                if (editorPlaying && activeTab === 'editor') {
+                    const currentTime = getEditorPlayTime();
+
+                    for (let i = 0; i < editorNotes.length; i++) {
+                        const note = editorNotes[i];
+                        if (note.time > editorLastFrameTime && note.time <= currentTime && !editorPlayedNotes.has(i)) {
+                            playClickSound();
+                            editorPlayedNotes.add(i);
+                        }
+                    }
+                    editorLastFrameTime = currentTime;
+
+                    const maxTime = editorNotes.length > 0
+                        ? Math.max(...editorNotes.map(n => n.time)) + 2000
+                        : 10000;
+                    if (currentTime > maxTime) {
+                        stopEditorPlayback();
+                        return;
+                    }
+
+                    const canvasW = editorCanvas.width / (Math.min(window.devicePixelRatio || 1, 2));
+                    const playheadX = editorTimeToX(currentTime);
+                    if (playheadX > canvasW * 0.75) {
+                        const targetScroll = currentTime - (canvasW * 0.4) / editorZoom;
+                        editorScrollX = Math.max(0, targetScroll);
+                    }
+                }
+                requestAnimationFrame(editorPlayLoop);
+            }
+            requestAnimationFrame(editorPlayLoop);
+
+
+            function updateKeybindButtons() {
+                document.querySelectorAll('.keybind-btn').forEach(btn => {
+                    const track = parseInt(btn.dataset.track);
+                    btn.textContent = keyBindings[track].toUpperCase();
+                    if (bindingTrack === track) {
+                        btn.classList.add('binding');
+                    } else {
+                        btn.classList.remove('binding');
+                    }
+                });
+            }
+
+            document.getElementById('keybindContainer').addEventListener('click', (e) => {
+                if (e.target.classList.contains('keybind-btn')) {
+                    const track = parseInt(e.target.dataset.track);
+                    if (bindingTrack === track) {
+                        bindingTrack = -1;
+                        updateKeybindButtons();
+                        showToast('按键绑定已取消');
+                        return;
+                    }
+                    bindingTrack = track;
+                    updateKeybindButtons();
+                    showToast(`请按下新按键绑定轨道 ${track + 1}...`);
+                }
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (activeTab === 'game' && bindingTrack !== -1) {
+                    e.preventDefault();
+                    const key = e.key.toLowerCase();
+                    if (key === 'escape' || key === ' ') {
+                        bindingTrack = -1;
+                        updateKeybindButtons();
+                        showToast('绑定已取消');
+                        return;
+                    }
+                    const conflictTrack = keyBindings.indexOf(key);
+                    if (conflictTrack !== -1 && conflictTrack !== bindingTrack) {
+                        showToast(`按键 "${key.toUpperCase()}" 已被轨道 ${conflictTrack + 1} 使用，请选择其他按键`);
+                        return;
+                    }
+                    const track = bindingTrack;
+                    keyBindings[bindingTrack] = key;
+                    bindingTrack = -1;
+                    updateKeybindButtons();
+                    showToast(`轨道 ${track + 1} 已绑定为 "${key.toUpperCase()}"`);
+                }
+            });
+
+            updateKeybindButtons();
+
+            window.addEventListener('keydown', (e) => {
+                if (activeTab === 'game' && bindingTrack === -1) {
+                    const key = e.key.toLowerCase();
+                    if (key === ' ') {
+                        e.preventDefault();
+                        if (gameState === 'playing') togglePause();
+                        else if (gameState === 'paused') togglePause();
+                        else if (gameState === 'idle') startGame();
+                        return;
+                    }
+                    if (gameState !== 'playing') return;
+                    const track = keyBindings.indexOf(key);
+                    if (track !== -1) {
+                        e.preventDefault();
+                        if (!gameKeyPressed[track]) {
+                            gameKeyPressed[track] = true;
+                            handleKeyPress(track);
+                        }
+                    }
+                }
+                if (activeTab === 'editor') {
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                const key = e.key.toLowerCase();
+                const track = keyBindings.indexOf(key);
+                if (track !== -1) {
+                    gameKeyPressed[track] = false;
+                }
+            });
+
+            document.getElementById('btnStartGame').addEventListener('click', startGame);
+            document.getElementById('btnLoadChart').addEventListener('click', () => document.getElementById('fileChartInput').click());
+            document.getElementById('btnLoadAudio').addEventListener('click', () => document.getElementById('fileAudioInput').click());
+            document.getElementById('fileChartInput').addEventListener('change', (e) => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                    try {
+                        const data = JSON.parse(reader.result);
+                        if (!data.notes || !Array.isArray(data.notes)) throw new Error('无效谱面');
+                        chartData = data; resetGameState(); initGameNotes(); gameState = 'idle'; updateGameUI();
+                        showToast('✅ 谱面加载成功: ' + (data.title || '未命名') + ' | 音符数: ' + data.notes.length);
+                    } catch (err) { showToast('❌ 谱面解析失败'); }
+                };
+                reader.readAsText(file); e.target.value = '';
+            });
+            document.getElementById('fileAudioInput').addEventListener('change', (e) => {
+                const file = e.target.files[0]; if (!file) return;
+                createAudioFromFile(file); showToast('🎵 音频已加载: ' + file.name); e.target.value = '';
+            });
+            document.querySelectorAll('.speed-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active-speed'));
+                    btn.classList.add('active-speed');
+                    gameSpeed = parseFloat(btn.dataset.speed); updateGameUI();
+                });
+            });
+
+            document.getElementById('audioDelayInput').addEventListener('change', function () {
+                audioDelay = parseInt(this.value) || 0;
+                showToast(`音频延迟已设置为 ${audioDelay} ms`);
+            });
+
+            function init() {
+                chartData = DEFAULT_CHART;
+                resizeGameCanvas();
+                initEditorNotes();
+                initGameNotes();
+                updateGameUI();
+                gameState = 'idle';
+                document.getElementById('speedIndicator').textContent = '1x';
+                document.querySelector('.speed-btn[data-speed="1"]')?.classList.add('active-speed');
+                showToast('Welcome to TERIZAL');
+            }
+            window.addEventListener('resize', () => { resizeGameCanvas(); resizeEditorCanvas(); });
+            requestAnimationFrame(drawGame);
+            init();
+        })();
+    </script>
+</body>
+
+</html>
