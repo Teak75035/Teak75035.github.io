@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>SPL逐字歌词编辑器 - 椒盐音乐格式</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+            padding: 20px 16px;
+            color: #0f172a;
+        }
+
+        /* 主容器 */
+        .app-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* 三块卡片响应式网格 */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        /* 桌面端：三列等宽 */
+        @media (min-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr 1.5fr 1fr;
+            }
+        }
+
+        /* 平板横屏：两列布局 */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+            }
+            .card-translate {
+                grid-column: span 2;
+            }
+        }
+
+        /* 卡片通用样式 */
+        .card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            padding: 18px 20px 12px;
+            border-bottom: 1px solid #eef2ff;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #1e293b;
+            background: #fafcff;
+        }
+
+        .card-content {
+            padding: 20px;
+            flex: 1;
+        }
+
+        /* 音频控制卡片内部 */
+        .audio-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .file-btn {
+            background: #eef2ff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 40px;
+            font-weight: 500;
+            color: #1e40af;
+            cursor: pointer;
+            font-size: 14px;
+            min-height: 44px;
+            min-width: 44px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .play-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 48px;
+            font-size: 20px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .time-display {
+            font-family: monospace;
+            font-size: 16px;
+            font-weight: 500;
+            background: #e2e8f0;
+            padding: 6px 12px;
+            border-radius: 32px;
+            min-width: 110px;
+            text-align: center;
+        }
+        .progress-slider {
+            flex: 1;
+            min-width: 120px;
+            height: 6px;
+            border-radius: 10px;
+            background: #cbd5e1;
+            cursor: pointer;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #cbd5e1;
+        }
+        input[type="range"]:focus {
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #2563eb;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* 歌词编辑卡片内部 */
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .action-btn {
+            background: #f1f5f9;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            min-height: 44px;
+            min-width: 44px;
+            transition: 0.2s;
+            color: #0f172a;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .action-btn.primary {
+            background: #2563eb;
+            color: white;
+        }
+        .switch-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 0 14px;
+            border-radius: 40px;
+            font-size: 13px;
+            min-height: 44px;
+            cursor: pointer;
+        }
+        .lyrics-container {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #eef2ff;
+            padding: 16px;
+            max-height: 55vh;
+            min-height: 280px;
+            overflow-y: auto;
+        }
+        .lyric-line {
+            margin-bottom: 24px;
+            border-left: 3px solid #e2e8f0;
+            padding-left: 14px;
+        }
+        .token-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 8px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        .token {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 32px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            background: transparent;
+            color: #1e293b;
+            border: 2px solid transparent;
+            min-height: 44px;
+            min-width: 44px;
+            text-align: center;
+        }
+        @media (max-width: 640px) {
+            .token {
+                font-size: 15px;
+                padding: 4px 10px;
+                min-height: 40px;
+                min-width: 40px;
+            }
+        }
+        .token.timed {
+            background-color: #d9f0e6;
+        }
+        .token.active {
+            border: 2px solid #2563eb;
+            background-color: #eff6ff;
+        }
+        .line-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+        .line-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 32px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            min-height: 36px;
+            color: #334155;
+        }
+        .line-end-time {
+            font-family: monospace;
+            font-size: 12px;
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 翻译导出卡片 */
+        .translate-area {
+            background: #fefce8;
+            border-radius: 20px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            border-radius: 20px;
+            border: 1px solid #cbd5e1;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+        .preview-area {
+            margin-top: 20px;
+        }
+        .warning-banner {
+            background: #fef9c3;
+            color: #854d0e;
+            padding: 12px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            font-weight: 500;
+            display: none;
+            font-size: 13px;
+        }
+        .export-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .export-buttons .action-btn {
+            flex: 1 0 auto;
+            text-align: center;
+            justify-content: center;
+        }
+
+        /* 模态框 */
+        .modal-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .modal-mask.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-card {
+            background: white;
+            max-width: 90vw;
+            width: 500px;
+            border-radius: 32px;
+            padding: 20px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+            margin: 16px;
+        }
+        @media (max-width: 560px) {
+            .modal-card {
+                width: 92vw;
+                padding: 16px;
+            }
+        }
+        .modal-card h3 {
+            margin-top: 0;
+            font-size: 1.4rem;
+        }
+        .modal-card textarea, .modal-card input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 20px;
+            border: 1px solid #cbd5e1;
+            font-size: 16px;
+            margin: 12px 0;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* Toast 容器 - 左上角多行堆叠 */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column-reverse;  /* 新消息在上方 */
+            align-items: flex-start;
+            gap: 8px;
+            pointer-events: none;
+            max-width: 90vw;
+        }
+        .toast-item {
+            background: #1e293b;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 40px;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            backdrop-filter: blur(4px);
+            pointer-events: auto;
+            animation: toastIn 0.2s ease-out;
+            max-width: 320px;
+            word-break: break-word;
+            white-space: normal;
+        }
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        @keyframes toastOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+        }
+        .toast-item.hide {
+            animation: toastOut 0.2s ease-in forwards;
+        }
+
+        .shortcuts-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.75);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-family: monospace;
+            pointer-events: none;
+            z-index: 1200;
+            backdrop-filter: blur(4px);
+            max-width: 260px;
+            text-align: right;
+            line-height: 1.4;
+        }
+        @media (max-width: 860px) {
+            .shortcuts-hint {
+                display: none;
+            }
+        }
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="dashboard">
+        <!-- 板块1：音频控制 -->
+        <div class="card">
+            <div class="card-header">🎵 音频控制</div>
+            <div class="card-content">
+                <input type="file" id="audioFileInput" accept="audio/*" style="display:none">
+                <div class="audio-bar">
+                    <button class="file-btn" id="selectAudioBtn">📁 选择音频</button>
+                    <button class="play-btn" id="playPauseBtn">▶</button>
+                    <div class="time-display" id="timeDisplay">00:00.000</div>
+                    <input type="range" id="progressBar" class="progress-slider" value="0" step="0.01">
+                </div>
+                <div style="font-size: 12px; color: #475569; margin-top: 8px;">
+                    💡 支持 MP3 / WAV / M4A
+                </div>
+            </div>
+        </div>
+
+        <!-- 板块2：歌词编辑 -->
+        <div class="card">
+            <div class="card-header">✍️ 歌词编辑</div>
+            <div class="card-content">
+                <div class="action-bar">
+                    <button class="action-btn primary" id="markTimeBtn">⏺ 打点 (T/R/1)</button>
+                    <button class="action-btn" id="addLineBtn">➕ 新增行 (N)</button>
+                    <button class="action-btn" id="mergeEndBreakBtn">⏹️ 结束行+换行 (M)</button>
+                    <button class="action-btn" id="importLyricsBtn">📂 导入歌词 (I)</button>
+                    <label class="switch-label">
+                        <input type="checkbox" id="autoLineBreakCheckbox"> 自动换行 (A)
+                    </label>
+                </div>
+                <div class="lyrics-container" id="lyricsContainer"></div>
+            </div>
+        </div>
+
+        <!-- 板块3：翻译与导出 -->
+        <div class="card card-translate">
+            <div class="card-header">🌐 翻译 & 导出</div>
+            <div class="card-content">
+                <div class="translate-area">
+                    <textarea id="translationInput" rows="3" placeholder="输入翻译文本，每行对应一句歌词..."></textarea>
+                    <button class="action-btn" id="applyTranslationBtn" style="margin-top:8px; width:100%;">🌐 应用翻译</button>
+                </div>
+                <div class="preview-area">
+                    <div id="warningBanner" class="warning-banner">⚠️ 存在未打点的字词，生成的SPL时间戳可能不准确</div>
+                    <textarea id="splPreview" rows="5" readonly placeholder="SPL格式预览将显示在这里..."></textarea>
+                    <div class="export-buttons">
+                        <button class="action-btn" id="generatePreviewBtn">🔄 生成SPL (G)</button>
+                        <button class="action-btn" id="copyLrcBtn">📋 复制歌词 (C)</button>
+                        <button class="action-btn" id="downloadLrcBtn">⬇️ 下载 .lrc (D)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast 容器 (左上角) -->
+<div id="toastContainer" class="toast-container"></div>
+
+<div class="shortcuts-hint">
+    🎹 空格: 播放/暂停 | ← →: ±5s | Ctrl+←→: ±1s | T/R/1:打点 | M:结束行+换行 | N:新行 | I:导入 | A:自动换行 | G:生成 | C:复制 | D:下载
+</div>
+
+<div id="customModal" class="modal-mask">
+    <div class="modal-card">
+        <h3 id="modalTitle">编辑歌词</h3>
+        <textarea id="modalInput" rows="3" placeholder="输入新的歌词原文"></textarea>
+        <div class="modal-buttons">
+            <button id="modalCancelBtn" class="line-btn">取消</button>
+            <button id="modalConfirmBtn" class="action-btn primary">确认</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- 时间格式化 ----------
+    function formatTime(ms) {
+        let totalMs = Math.floor(ms);
+        if (isNaN(totalMs) || totalMs < 0) totalMs = 0;
+        const totalSeconds = Math.floor(totalMs / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        const milliseconds = totalMs % 1000;
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+    }
+
+    // ---------- 分词 (修改：空格合并到前一个有效词) ----------
+    function tokenizeText(text) {
+        if (!text) return [];
+        const tokens = [];
+        let i = 0;
+        const len = text.length;
+        // 辅助：判断是否为空白字符（空格、制表符等）
+        function isWhitespace(ch) {
+            return ch === ' ' || ch === '\t' || ch === '\u00A0' || ch === '\''; // 包括普通空格和不间断空格
+        }
+        while (i < len) {
+            const ch = text[i];
+            // 如果是空白字符，不单独生成token，而是附加到前一个token（如果有）
+            if (isWhitespace(ch)) {
+                // 收集连续空白
+                let spaceStr = '';
+                while (i < len && isWhitespace(text[i])) {
+                    spaceStr += text[i];
+                    i++;
+                }
+                // 将空白附加到前一个token的文本末尾（如果存在）
+                if (tokens.length > 0) {
+                    tokens[tokens.length - 1] += spaceStr;
+                } else {
+                    // 行首空白：附加到后一个非空白token（先暂存，用临时变量）
+                    // 简便处理：将行首空白忽略（或作为单独token？为了避免空token，直接忽略）
+                    // 但为了更符合直觉，我们将其附加到后面第一个非空白token的开头。
+                    // 由于后面还未解析，先存储到 buffer 中，等遇到非空白时再合并。
+                    let leadingSpace = spaceStr;
+                    // 继续寻找下一个非空白token
+                    let j = i;
+                    let nextNonSpaceStart = -1;
+                    while (j < len && isWhitespace(text[j])) j++;
+                    if (j < len) {
+                        // 有后续非空白字符，将空白附加到那个token的前面，但需要修改那个token的生成方式。
+                        // 简单办法：先跳过空白，在生成非空白token时，将leadingSpace加在前面。
+                        // 但我们仍然需要解析该token。将leadingSpace保存下来。
+                        // 重新设置指针：不消耗这些空白，而是让后面处理非空白时知道有前置空格。
+                        // 为了不复杂，直接忽略行首空白（现代歌词编辑器通常不保留行首空格）
+                        // 这里为了简化，丢弃行首空白并提示用户。
+                        // 更佳做法：保留到第一个token的开头，我们采用 buffer 方式。
+                        // 重新实现：先不消费空白，而是记录空白前缀，在遇到有效字符时，加在其文本前。
+                    }
+                    // 简单处理：忽略行首空白（不生成任何token，也不附加）
+                    // 大多数歌词不会以空格开头，忽略是合理的。
+                }
+                continue;
+            }
+            // 处理非空白字符
+            if (/[\u4e00-\u9fff]/.test(ch)) {
+                // 中文字符单独作为一个token
+                tokens.push(ch);
+                i++;
+            } else if (/[a-zA-Z0-9]/.test(ch)) {
+                let j = i;
+                while (j < len && /[a-zA-Z0-9]/.test(text[j])) j++;
+                tokens.push(text.substring(i, j));
+                i = j;
+            } else {
+                // 其他非空白、非字母数字、非中文的字符（如标点符号），单独作为token
+                // 但这里不再将空格包括进来（因为已经在上面处理了）
+                tokens.push(ch);
+                i++;
+            }
+        }
+        // 最后处理行首空格（如果tokens为空，则全部是空格，返回空数组）
+        // 如果第一个token前面有空格，由于我们忽略了行首空白，所以不会影响。
+        // 但更好的用户体验：如果行首有空格，我们将其附加到第一个token的开头。
+        // 上面的逻辑没有处理，为了简单，我们可以在生成最终tokens之前，重新扫描原文本，
+        // 但为了代码清晰，这里不处理极端的行首空格，因为用户通常不会输入行首空格。
+        return tokens;
+    }
+
+    // ---------- 全局变量 ----------
+    let audioElement = null;
+    let currentAudioName = "lyrics";
+    let lyricsLines = [];
+    let activeLineIdx = 0;
+    let activeTokenIdx = 0;
+    let autoLineBreak = false;
+
+    // ---------- Toast 多行管理 ----------
+    function showToast(message, duration = 2000) {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = 'toast-item';
+        toast.innerText = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.add('hide');
+            toast.addEventListener('animationend', () => {
+                if (toast.parentNode) toast.parentNode.removeChild(toast);
+            }, { once: true });
+        }, duration);
+    }
+
+    // ---------- 辅助函数 ----------
+    function getGlobalTokenIndex(lineIdx, tokenIdx) {
+        let idx = 0;
+        for (let i = 0; i < lineIdx; i++) idx += lyricsLines[i].tokens.length;
+        idx += tokenIdx;
+        return idx;
+    }
+
+    // 修复重置逻辑：只清除当前行点击词之后以及后续所有行的全部字词，保留前面行
+    function resetTimesFromToken(lineIdx, tokenIdx) {
+        let resetCount = 0;
+        for (let i = 0; i < lyricsLines.length; i++) {
+            // 前面的行：完全跳过，不清除任何时间
+            if (i < lineIdx) continue;
+            
+            const line = lyricsLines[i];
+            let startToken = 0;
+            if (i === lineIdx) {
+                startToken = tokenIdx + 1;   // 当前行：从点击词之后开始清除
+            } else {
+                startToken = 0;               // 后续行：从头清除全部
+            }
+            for (let j = startToken; j < line.tokens.length; j++) {
+                if (line.tokens[j].startTime !== null) {
+                    line.tokens[j].startTime = null;
+                    resetCount++;
+                }
+            }
+        }
+        if (resetCount > 0) showToast(`已重置后面 ${resetCount} 个字词的时间戳`, 1500);
+        updatePreview();
+    }
+
+    function seekToTokenStartMinus3Seconds(tokenStartMs) {
+        if (!audioElement) { showToast("请先加载音频文件", 1000); return false; }
+        if (tokenStartMs === null || tokenStartMs === undefined) return false;
+        const seekSeconds = Math.max(0, (tokenStartMs - 3000) / 1000);
+        audioElement.currentTime = seekSeconds;
+        showToast(`⏩ 跳转到 ${formatTime(tokenStartMs - 3000)}`, 1200);
+        return true;
+    }
+
+    function nextUnsetTokenInLine(lineIdx, startIdx = 0) {
+        const tokens = lyricsLines[lineIdx].tokens;
+        for (let i = startIdx; i < tokens.length; i++) if (tokens[i].startTime === null) return i;
+        return -1;
+    }
+
+    function createNewLineAfter(lineIdx) {
+        const newLineText = "新歌词";
+        const newTokens = tokenizeText(newLineText).map(txt => ({ text: txt, startTime: null }));
+        lyricsLines.splice(lineIdx + 1, 0, {
+            originalText: newLineText, tokens: newTokens, lineEndTime: null, _translation: null
+        });
+        activeLineIdx = lineIdx + 1;
+        activeTokenIdx = 0;
+        renderLyrics();
+        showToast("已新建歌词行", 1500);
+    }
+
+    function handleAutoLineBreakIfNeeded(lineIdx) {
+        if (!autoLineBreak) return false;
+        const line = lyricsLines[lineIdx];
+        const allTimed = line.tokens.every(t => t.startTime !== null);
+        if (allTimed) {
+            if (lineIdx === lyricsLines.length - 1) createNewLineAfter(lineIdx);
+            else {
+                const nextLineIdx = lineIdx + 1;
+                let nextTokenIdx = nextUnsetTokenInLine(nextLineIdx, 0);
+                if (nextTokenIdx === -1) nextTokenIdx = 0;
+                activeLineIdx = nextLineIdx;
+                activeTokenIdx = nextTokenIdx;
+                renderLyrics();
+                showToast("自动换行至下一行", 1000);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    function markCurrentTimeToActiveToken() {
+        if (!audioElement) { showToast("请先加载音频文件", 1500); return false; }
+        if (lyricsLines.length === 0) return false;
+        const line = lyricsLines[activeLineIdx];
+        if (!line || activeTokenIdx >= line.tokens.length) return false;
+        const currentMs = Math.floor(audioElement.currentTime * 1000);
+        line.tokens[activeTokenIdx].startTime = currentMs;
+        showToast(`已打点: ${line.tokens[activeTokenIdx].text} @ ${formatTime(currentMs)}`, 1200);
+        const nextIdx = nextUnsetTokenInLine(activeLineIdx, activeTokenIdx + 1);
+        if (nextIdx !== -1) { activeTokenIdx = nextIdx; renderLyrics(); }
+        else {
+            renderLyrics();
+            const lineAllDone = lyricsLines[activeLineIdx].tokens.every(t => t.startTime !== null);
+            if (lineAllDone && autoLineBreak) handleAutoLineBreakIfNeeded(activeLineIdx);
+            else {}
+        }
+        updatePreview();
+        return true;
+    }
+
+    function setCurrentLineEndTime() {
+        if (!audioElement) { showToast("请先加载音频", 1000); return false; }
+        if (lyricsLines.length === 0) return false;
+        const ms = Math.floor(audioElement.currentTime * 1000);
+        lyricsLines[activeLineIdx].lineEndTime = ms;
+        renderLyrics();
+        showToast(`行结束时间设为 ${formatTime(ms)}`, 1200);
+        updatePreview();
+        return true;
+    }
+
+    function moveToNextLine() {
+        if (lyricsLines.length === 0) return;
+        const nextLine = activeLineIdx + 1;
+        if (nextLine < lyricsLines.length) {
+            let newTokenIdx = nextUnsetTokenInLine(nextLine, 0);
+            if (newTokenIdx === -1) newTokenIdx = 0;
+            activeLineIdx = nextLine;
+            activeTokenIdx = newTokenIdx;
+            renderLyrics();
+            showToast(`切换到下一行`, 1000);
+        } else {
+            createNewLineAfter(activeLineIdx);
+            showToast("已在末尾添加新行", 1000);
+        }
+    }
+
+    function endLineAndMoveToNext() {
+        if (!audioElement) { showToast("请先加载音频文件", 1000); return; }
+        if (lyricsLines.length === 0) return;
+        if (setCurrentLineEndTime()) moveToNextLine();
+    }
+
+    function addNewLine() {
+        const newText = "新歌词";
+        const tokens = tokenizeText(newText).map(txt => ({ text: txt, startTime: null }));
+        lyricsLines.push({ originalText: newText, tokens, lineEndTime: null, _translation: null });
+        activeLineIdx = lyricsLines.length - 1;
+        activeTokenIdx = 0;
+        renderLyrics();
+        showToast("已添加新行", 1000);
+        updatePreview();
+    }
+
+    function clearLineEndTime(lineIdx) {
+        if (lyricsLines[lineIdx]) { lyricsLines[lineIdx].lineEndTime = null; renderLyrics(); showToast("已清除行结束时间", 1000); updatePreview(); }
+    }
+
+    function deleteCurrentLine(lineIdx) {
+        if (lyricsLines.length <= 1) { showToast("至少需要保留一行歌词", 1500); return; }
+        lyricsLines.splice(lineIdx, 1);
+        let newIdx = Math.min(activeLineIdx, lyricsLines.length - 1);
+        if (newIdx < 0) newIdx = 0;
+        activeLineIdx = newIdx;
+        activeTokenIdx = 0;
+        if (lyricsLines[activeLineIdx] && lyricsLines[activeLineIdx].tokens.length === 0) activeTokenIdx = 0;
+        renderLyrics();
+        showToast("已删除行", 1000);
+        updatePreview();
+    }
+
+    function selectLine(lineIdx) {
+        activeLineIdx = lineIdx;
+        let firstUnset = nextUnsetTokenInLine(lineIdx, 0);
+        activeTokenIdx = firstUnset !== -1 ? firstUnset : 0;
+        renderLyrics();
+        showToast(`已选中行 ${lineIdx+1}`, 800);
+    }
+
+    let editLineCallback = null;
+    function editLineText(lineIdx) {
+        const line = lyricsLines[lineIdx];
+        const modal = document.getElementById('customModal');
+        const modalInput = document.getElementById('modalInput');
+        document.getElementById('modalTitle').innerText = "编辑歌词原文";
+        modalInput.value = line.originalText;
+        modal.classList.add('active');
+        editLineCallback = (newText) => {
+            if (!newText.trim()) newText = "空";
+            const newTokensRaw = tokenizeText(newText);
+            const oldTokens = line.tokens;
+            const newTokens = newTokensRaw.map((txt, idx) => {
+                let matchedTime = null;
+                // 精确匹配
+                if (idx < oldTokens.length && oldTokens[idx].text === txt) {
+                    matchedTime = oldTokens[idx].startTime;
+                } else {
+                    // 宽松匹配：如果旧token的文本去除尾部空格后等于新token文本，或者新token文本去除尾部空格后等于旧token文本
+                    const found = oldTokens.find(ot => {
+                        if (ot.text === txt) return true;
+                        // 因为空格可能被合并到前后，尝试比较去除两端空格后的结果
+                        const otTrimmed = ot.text.replace(/\s+$/g, ''); // 移除尾部空格
+                        const txtTrimmed = txt.replace(/\s+$/g, '');
+                        if (otTrimmed === txtTrimmed) return true;
+                        // 如果新token包含旧token且仅尾部添加了空格
+                        if (txt.startsWith(ot.text) && txt.slice(ot.text.length).trim() === '') return true;
+                        return false;
+                    });
+                    if (found) matchedTime = found.startTime;
+                }
+                return { text: txt, startTime: matchedTime };
+            });
+            line.originalText = newText;
+            line.tokens = newTokens;
+            if (activeLineIdx === lineIdx && activeTokenIdx >= newTokens.length) activeTokenIdx = Math.max(0, newTokens.length-1);
+            renderLyrics();
+            updatePreview();
+            showToast("歌词已更新", 1000);
+        };
+    }
+
+    function applyTranslation() {
+        const raw = document.getElementById('translationInput').value;
+        const lines = raw.split(/\r?\n/);
+        for (let i = 0; i < lyricsLines.length; i++) {
+            const transText = (i < lines.length && lines[i].trim() !== "") ? lines[i].trim() : null;
+            if (transText) {
+                const firstTokenTime = lyricsLines[i].tokens.find(t => t.startTime !== null)?.startTime || null;
+                if (firstTokenTime !== null) lyricsLines[i]._translation = { text: transText, time: firstTokenTime };
+                else { lyricsLines[i]._translation = null; showToast(`第${i+1}行无已打点字词，跳过翻译`, 1000); }
+            } else lyricsLines[i]._translation = null;
+        }
+        renderLyrics();
+        updatePreview();
+        showToast("翻译已应用", 1200);
+    }
+
+    function generateSPLText() {
+        let output = "";
+        for (let i = 0; i < lyricsLines.length; i++) {
+            const line = lyricsLines[i];
+            let lastTime = null;
+            let lineTokensStr = "";
+            for (let j = 0; j < line.tokens.length; j++) {
+                const token = line.tokens[j];
+                let timeMs = token.startTime;
+                if (timeMs === null) timeMs = (lastTime !== null) ? lastTime + 10 : 0;
+                timeMs = Math.floor(timeMs);
+                lastTime = timeMs;
+                lineTokensStr += `[${formatTime(timeMs)}]${token.text}`;
+            }
+            let lineEndStr = line.lineEndTime !== null ? `[${formatTime(Math.floor(line.lineEndTime))}]` : "";
+            output += lineTokensStr + lineEndStr + "\n";
+            if (line._translation && line._translation.text) {
+                let transTime = line._translation.time !== null ? Math.floor(line._translation.time) : 0;
+                output += `[${formatTime(transTime)}]${line._translation.text}\n`;
+            }
+        }
+        return output.trim();
+    }
+
+    function hasAnyUnsetToken() { return lyricsLines.some(line => line.tokens.some(t => t.startTime === null)); }
+    function updatePreview() {
+        document.getElementById('splPreview').value = generateSPLText();
+        document.getElementById('warningBanner').style.display = hasAnyUnsetToken() ? "flex" : "none";
+    }
+
+    function renderLyrics() {
+        const container = document.getElementById('lyricsContainer');
+        container.innerHTML = '';
+        for (let i = 0; i < lyricsLines.length; i++) {
+            const line = lyricsLines[i];
+            const lineDiv = document.createElement('div'); lineDiv.className = 'lyric-line';
+            const tokenDiv = document.createElement('div'); tokenDiv.className = 'token-list';
+            line.tokens.forEach((token, tIdx) => {
+                const span = document.createElement('span');
+                span.className = 'token';
+                if (token.startTime !== null) span.classList.add('timed');
+                if (activeLineIdx === i && activeTokenIdx === tIdx) span.classList.add('active');
+                span.textContent = token.text;
+                span.dataset.lineIdx = i; span.dataset.tokenIdx = tIdx;
+                span.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const clickedLine = parseInt(span.dataset.lineIdx), clickedToken = parseInt(span.dataset.tokenIdx);
+                    const currentGlobal = getGlobalTokenIndex(activeLineIdx, activeTokenIdx);
+                    const clickedGlobal = getGlobalTokenIndex(clickedLine, clickedToken);
+                    if (clickedGlobal < currentGlobal) resetTimesFromToken(clickedLine, clickedToken);
+                    activeLineIdx = clickedLine; activeTokenIdx = clickedToken;
+                    renderLyrics();
+                    const clickedTokenData = lyricsLines[clickedLine].tokens[clickedToken];
+                    if (clickedTokenData.startTime !== null && audioElement) seekToTokenStartMinus3Seconds(clickedTokenData.startTime);
+                    else if (clickedTokenData.startTime === null) showToast(`「${clickedTokenData.text}」尚未打点，无法跳转`, 1000);
+                });
+                tokenDiv.appendChild(span);
+            });
+            lineDiv.appendChild(tokenDiv);
+            const actionsDiv = document.createElement('div'); actionsDiv.className = 'line-actions';
+            const endTimeStr = line.lineEndTime ? formatTime(line.lineEndTime) : '无';
+            actionsDiv.innerHTML = `
+                <span class="line-end-time">⏱️ 结束: ${endTimeStr}</span>
+                <button class="line-btn" data-action="clearEnd" data-line="${i}">🗑️ 清除结束时间</button>
+                <button class="line-btn" data-action="delete" data-line="${i}">❌ 删除此行</button>
+                <button class="line-btn" data-action="select" data-line="${i}">✨ 选中行</button>
+                <button class="line-btn" data-action="edit" data-line="${i}">✏️ 编辑原文</button>
+            `;
+            lineDiv.appendChild(actionsDiv);
+            container.appendChild(lineDiv);
+        }
+        document.querySelectorAll('[data-action="clearEnd"]').forEach(btn => btn.addEventListener('click', (e) => { clearLineEndTime(parseInt(btn.dataset.line)); }));
+        document.querySelectorAll('[data-action="delete"]').forEach(btn => btn.addEventListener('click', (e) => { deleteCurrentLine(parseInt(btn.dataset.line)); }));
+        document.querySelectorAll('[data-action="select"]').forEach(btn => btn.addEventListener('click', (e) => { selectLine(parseInt(btn.dataset.line)); }));
+        document.querySelectorAll('[data-action="edit"]').forEach(btn => btn.addEventListener('click', (e) => { editLineText(parseInt(btn.dataset.line)); }));
+        const activeElem = container.querySelector('.token.active');
+        if (activeElem) activeElem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function importLyricsFromText() {
+        const modal = document.getElementById('customModal');
+        const modalInput = document.getElementById('modalInput');
+        document.getElementById('modalTitle').innerText = "导入歌词 (每行一句)";
+        modalInput.value = lyricsLines.map(l => l.originalText).join('\n');
+        modal.classList.add('active');
+        const confirmHandler = () => {
+            const rawText = modalInput.value;
+            const linesArr = rawText.split(/\r?\n/).filter(l => l.trim().length > 0);
+            if (linesArr.length === 0) { showToast("至少一行歌词", 1000); modal.classList.remove('active'); return; }
+            const newLyrics = [];
+            for (let lineText of linesArr) {
+                const tokens = tokenizeText(lineText).map(txt => ({ text: txt, startTime: null }));
+                newLyrics.push({ originalText: lineText, tokens, lineEndTime: null, _translation: null });
+            }
+            lyricsLines = newLyrics;
+            activeLineIdx = 0; activeTokenIdx = 0;
+            renderLyrics(); updatePreview();
+            document.getElementById('translationInput').value = '';
+            modal.classList.remove('active');
+            showToast(`导入成功，共${lyricsLines.length}行`, 1500);
+        };
+        document.getElementById('modalConfirmBtn').onclick = () => { confirmHandler(); modal.classList.remove('active'); };
+        document.getElementById('modalCancelBtn').onclick = () => { modal.classList.remove('active'); };
+    }
+
+    function initDefaultLyrics() {
+        const defaultText = "你好椒盐音乐";
+        const tokens = tokenizeText(defaultText).map(txt => ({ text: txt, startTime: null }));
+        lyricsLines = [{ originalText: defaultText, tokens, lineEndTime: null, _translation: null }];
+        activeLineIdx = 0; activeTokenIdx = 0;
+        renderLyrics(); updatePreview();
+    }
+
+    function setupAudio(file) {
+        if (audioElement) { audioElement.pause(); audioElement.src = ''; }
+        const url = URL.createObjectURL(file);
+        audioElement = new Audio(url);
+        currentAudioName = file.name.replace(/\.[^/.]+$/, "");
+        audioElement.addEventListener('loadedmetadata', () => document.getElementById('progressBar').max = audioElement.duration);
+        audioElement.addEventListener('timeupdate', () => {
+            if (audioElement) {
+                const cur = audioElement.currentTime;
+                document.getElementById('progressBar').value = cur;
+                document.getElementById('timeDisplay').innerText = formatTime(Math.floor(cur * 1000));
+            }
+        });
+        audioElement.addEventListener('ended', () => { isPlaying = false; document.getElementById('playPauseBtn').innerText = '▶'; });
+        showToast(`已加载 ${file.name}`, 1500);
+    }
+
+    // 键盘事件与输入检测
+    function isInputFocused() {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) return true;
+        return document.getElementById('customModal').classList.contains('active');
+    }
+
+    function handleKeydown(e) {
+        if (isInputFocused()) return;
+        const key = e.key, ctrl = e.ctrlKey || e.metaKey;
+        if (key === ' ' || key === 'Space') { e.preventDefault(); document.getElementById('playPauseBtn').click(); return; }
+        if (key === 'ArrowLeft') { e.preventDefault(); if (audioElement) { const step = ctrl ? 1 : 5; audioElement.currentTime = Math.max(0, audioElement.currentTime - step); showToast(`后退 ${step} 秒`, 800); } else showToast("未加载音频", 800); return; }
+        if (key === 'ArrowRight') { e.preventDefault(); if (audioElement) { const step = ctrl ? 1 : 5; audioElement.currentTime = Math.min(audioElement.duration, audioElement.currentTime + step); showToast(`前进 ${step} 秒`, 800); } else showToast("未加载音频", 800); return; }
+        if (key === 't' || key === 'T' || key === 'r' || key === 'R' || key === '1') { e.preventDefault(); document.getElementById('markTimeBtn').click(); return; }
+        if (key === 'm' || key === 'M') { e.preventDefault(); document.getElementById('mergeEndBreakBtn').click(); return; }
+        if (key === 'n' || key === 'N') { e.preventDefault(); document.getElementById('addLineBtn').click(); return; }
+        if (key === 'i' || key === 'I') { e.preventDefault(); document.getElementById('importLyricsBtn').click(); return; }
+        if (key === 'a' || key === 'A') { e.preventDefault(); const chk = document.getElementById('autoLineBreakCheckbox'); chk.checked = !chk.checked; chk.dispatchEvent(new Event('change')); showToast(`自动换行: ${chk.checked ? '开启' : '关闭'}`, 1000); return; }
+        if (key === 'g' || key === 'G') { e.preventDefault(); document.getElementById('generatePreviewBtn').click(); return; }
+        if (key === 'c' || key === 'C') { e.preventDefault(); document.getElementById('copyLrcBtn').click(); return; }
+        if (key === 'd' || key === 'D') { e.preventDefault(); document.getElementById('downloadLrcBtn').click(); return; }
+    }
+
+    // 绑定UI事件
+    document.getElementById('selectAudioBtn').addEventListener('click', () => document.getElementById('audioFileInput').click());
+    document.getElementById('audioFileInput').addEventListener('change', (e) => { if (e.target.files.length) setupAudio(e.target.files[0]); });
+    document.getElementById('playPauseBtn').addEventListener('click', () => {
+        if (!audioElement) { showToast("请先选择音频文件", 1000); return; }
+        if (audioElement.paused) { audioElement.play().catch(e => showToast("自动播放被阻止，请手动点击播放", 1500)); document.getElementById('playPauseBtn').innerText = '⏸'; }
+        else { audioElement.pause(); document.getElementById('playPauseBtn').innerText = '▶'; }
+    });
+    document.getElementById('progressBar').addEventListener('input', (e) => { if (audioElement) audioElement.currentTime = parseFloat(e.target.value); });
+    document.getElementById('markTimeBtn').addEventListener('click', markCurrentTimeToActiveToken);
+    document.getElementById('addLineBtn').addEventListener('click', addNewLine);
+    document.getElementById('mergeEndBreakBtn').addEventListener('click', endLineAndMoveToNext);
+    document.getElementById('importLyricsBtn').addEventListener('click', importLyricsFromText);
+    document.getElementById('autoLineBreakCheckbox').addEventListener('change', (e) => { autoLineBreak = e.target.checked; });
+    document.getElementById('applyTranslationBtn').addEventListener('click', applyTranslation);
+    document.getElementById('generatePreviewBtn').addEventListener('click', updatePreview);
+    document.getElementById('copyLrcBtn').addEventListener('click', () => { navigator.clipboard.writeText(generateSPLText()); showToast("已复制SPL歌词", 1200); });
+    document.getElementById('downloadLrcBtn').addEventListener('click', () => {
+        const content = generateSPLText();
+        const fileName = currentAudioName ? `${currentAudioName}.lrc` : "lyrics.lrc";
+        const blob = new Blob([content], {type: "text/plain"});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fileName; a.click(); URL.revokeObjectURL(a.href);
+        showToast("下载成功", 1200);
+    });
+
+    window.addEventListener('click', (e) => { const modal = document.getElementById('customModal'); if (e.target === modal) modal.classList.remove('active'); });
+    window.addEventListener('keydown', handleKeydown);
+
+    initDefaultLyrics();
+    autoLineBreak = false;
+    document.getElementById('autoLineBreakCheckbox').checked = false;
+    let isPlaying = false;
+</script>
+</body>
+</html>
